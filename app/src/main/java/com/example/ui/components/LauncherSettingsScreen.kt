@@ -841,6 +841,28 @@ fun LauncherSettingsScreen(
                             onCheckedChange = { viewModel.setHighRefreshRateEnabled(it) }
                         )
 
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text("Modo de Renderização", fontWeight = FontWeight.Bold, color = Color.White, fontSize = 14.sp)
+                        Text("Escolha entre GPU Real, Simulado ou Software para otimizar desempenho e compatibilidade.", color = Color.Gray, fontSize = 12.sp)
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            val modes = listOf("GPU_REAL" to "GPU Real", "SIMULATED" to "Simulado", "SOFTWARE" to "Software")
+                            modes.forEach { (key, label) ->
+                                val isSelected = uiState.renderingMode == key
+                                Button(
+                                    onClick = { viewModel.setRenderingMode(key) },
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = if (isSelected) Color(0xFF2563EB) else Color(0xFF374151)
+                                    ),
+                                    modifier = Modifier.weight(1f).height(40.dp)
+                                ) {
+                                    Text(label, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                                }
+                            }
+                        }
+
                         OutlinedButton(
                             onClick = { viewModel.setWelcomeOnboardingOpen(true) },
                             modifier = Modifier.fillMaxWidth()

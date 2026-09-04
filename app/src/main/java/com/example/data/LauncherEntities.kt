@@ -40,5 +40,6 @@ data class LauncherConfigEntity(
     @androidx.room.ColumnInfo(defaultValue = "1") val highRefreshRateEnabled: Boolean = true,
     @androidx.room.ColumnInfo(defaultValue = "1") val isAiEnabled: Boolean = true,
     @androidx.room.ColumnInfo(defaultValue = "NULL") val customWallpaperUri: String? = null,
-    @androidx.room.ColumnInfo(defaultValue = "1") val homePageCount: Int = 1
+    @androidx.room.ColumnInfo(defaultValue = "1") val homePageCount: Int = 1,
+    @androidx.room.ColumnInfo(defaultValue = "GPU_REAL") val renderingMode: String = "GPU_REAL"
 )

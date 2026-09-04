@@ -30,7 +30,7 @@ android {
     val finalVersionCode = ciVersionCode ?: localVersionCode
 
     versionCode = finalVersionCode
-    versionName = "1.$finalVersionCode"
+    versionName = "1.2.3"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }

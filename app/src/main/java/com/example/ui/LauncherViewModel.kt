@@ -66,7 +66,8 @@ data class LauncherUiState(
     val customWallpaperUri: String? = null,
     val homePageCount: Int = 1,
     val isEditMode: Boolean = false,
-    val gridColumns: Int = 4
+    val gridColumns: Int = 4,
+    val renderingMode: String = "GPU_REAL"
 )
 
 class LauncherViewModel(application: Application) : AndroidViewModel(application) {
@@ -205,7 +206,8 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
                         highRefreshRateEnabled = cfg.highRefreshRateEnabled,
                         isAiEnabled = cfg.isAiEnabled,
                         customWallpaperUri = cfg.customWallpaperUri,
-                        homePageCount = cfg.homePageCount
+                        homePageCount = cfg.homePageCount,
+                        renderingMode = cfg.renderingMode
                     )
                 }
             }
@@ -489,10 +491,16 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
                     highRefreshRateEnabled = state.highRefreshRateEnabled,
                     isAiEnabled = state.isAiEnabled,
                     customWallpaperUri = state.customWallpaperUri,
-                    homePageCount = state.homePageCount
+                    homePageCount = state.homePageCount,
+                    renderingMode = state.renderingMode
                 )
             )
         }
+    }
+
+    fun setRenderingMode(mode: String) {
+        _uiState.update { it.copy(renderingMode = mode) }
+        persistConfig()
     }
 
     fun toggleAddNewAppsToHome() {

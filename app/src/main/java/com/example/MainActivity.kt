@@ -105,6 +105,10 @@ class MainActivity : FragmentActivity() {
         applyHighRefreshRate(uiState.highRefreshRateEnabled)
       }
 
+      LaunchedEffect(uiState.renderingMode) {
+        applyRenderingMode(uiState.renderingMode)
+      }
+
       // Back handler to close overlay drawer, settings page or modals when user presses Back
       BackHandler(
         enabled = uiState.isSettingsPageOpen ||
@@ -159,6 +163,33 @@ class MainActivity : FragmentActivity() {
       }
     } catch (e: Exception) {
       // Ignored if device vendor restricts manual display mode override
+    }
+  }
+
+  private fun applyRenderingMode(mode: String) {
+    try {
+      when (mode) {
+        "GPU_REAL" -> {
+          window.setFlags(
+              android.view.WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED,
+              android.view.WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED
+          )
+          window.decorView.setLayerType(android.view.View.LAYER_TYPE_HARDWARE, null)
+        }
+        "SIMULATED" -> {
+          window.setFlags(
+              android.view.WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED,
+              android.view.WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED
+          )
+          window.decorView.setLayerType(android.view.View.LAYER_TYPE_SOFTWARE, null)
+        }
+        "SOFTWARE" -> {
+          window.clearFlags(android.view.WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED)
+          window.decorView.setLayerType(android.view.View.LAYER_TYPE_SOFTWARE, null)
+        }
+      }
+    } catch (e: Exception) {
+      // Ignored
     }
   }
 
