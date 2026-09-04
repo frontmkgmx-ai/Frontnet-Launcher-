@@ -118,23 +118,27 @@ googleServices { missingGoogleServicesStrategy = MissingGoogleServicesStrategy.W
 // Some unused dependencies are commented out below instead of being removed.
 // This makes it easy to add them back in the future if needed.
 dependencies {
-  // Biometria nativa
-  implementation("androidx.biometric:biometric:1.2.0-alpha05")
-
-  // Compatibilidade com FragmentActivity e KTX
+  // AndroidX Core e Fragmentos
+  implementation("androidx.core:core-ktx:1.13.1")
   implementation("androidx.appcompat:appcompat:1.7.0")
   implementation("androidx.fragment:fragment-ktx:1.8.3")
   implementation("androidx.activity:activity-compose:1.9.2")
-  implementation("androidx.core:core-ktx:1.13.1")
 
-  // Jetpack Compose Graphics e Foundation
+  // Autenticação Biométrica Nativa
+  implementation("androidx.biometric:biometric:1.2.0-alpha05")
+
+  // Jetpack Compose
+  implementation(platform("androidx.compose:compose-bom:2024.09.00"))
+  implementation("androidx.compose.ui:ui")
   implementation("androidx.compose.ui:ui-graphics")
   implementation("androidx.compose.foundation:foundation")
   implementation("androidx.compose.material3:material3")
 
-  // DataStore Preferences
+  // Jetpack DataStore Preferences
   implementation("androidx.datastore:datastore-preferences:1.1.1")
 
+  // Coroutines
+  implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
   implementation(platform(libs.androidx.compose.bom))
   implementation(platform(libs.firebase.bom))
   // implementation(libs.accompanist.permissions)

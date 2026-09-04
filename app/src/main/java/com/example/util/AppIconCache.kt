@@ -9,7 +9,6 @@ import android.graphics.drawable.Drawable
 import android.util.LruCache
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
-import androidx.core.graphics.drawable.toBitmap
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -29,21 +28,18 @@ object AppIconCache {
     fun drawableToImageBitmap(drawable: Drawable?): ImageBitmap? {
         if (drawable == null) return null
         return try {
-            val bitmap = when (drawable) {
-                is BitmapDrawable -> drawable.bitmap
-                is ColorDrawable -> {
-                    val bmp = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
-                    val canvas = Canvas(bmp)
-                    drawable.draw(canvas)
-                    bmp
-                }
-                else -> {
-                    val width = if (drawable.intrinsicWidth > 0) drawable.intrinsicWidth.coerceAtMost(192) else 96
-                    val height = if (drawable.intrinsicHeight > 0) drawable.intrinsicHeight.coerceAtMost(192) else 96
-                    drawable.toBitmap(width, height, Bitmap.Config.ARGB_8888)
-                }
+            val bitmap = if (drawable is BitmapDrawable && drawable.bitmap != null) {
+                drawable.bitmap
+            } else {
+                val width = if (drawable.intrinsicWidth > 0) drawable.intrinsicWidth.coerceAtMost(192) else 96
+                val height = if (drawable.intrinsicHeight > 0) drawable.intrinsicHeight.coerceAtMost(192) else 96
+                val bmp = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+                val canvas = Canvas(bmp)
+                drawable.setBounds(0, 0, canvas.width, canvas.height)
+                drawable.draw(canvas)
+                bmp
             }
-            bitmap?.asImageBitmap()
+            bitmap.asImageBitmap()
         } catch (e: Exception) {
             null
         }
@@ -63,14 +59,16 @@ object AppIconCache {
         bitmapCache.get(packageName)?.let { return@withContext it }
         try {
             val drawable = pm.getApplicationIcon(packageName)
-            val bitmap = if (drawable.intrinsicWidth > 0 && drawable.intrinsicHeight > 0) {
-                drawable.toBitmap(
-                    width = drawable.intrinsicWidth.coerceAtMost(192),
-                    height = drawable.intrinsicHeight.coerceAtMost(192),
-                    config = Bitmap.Config.ARGB_8888
-                )
+            val bitmap = if (drawable is BitmapDrawable && drawable.bitmap != null) {
+                drawable.bitmap
             } else {
-                drawable.toBitmap(192, 192, Bitmap.Config.ARGB_8888)
+                val width = if (drawable.intrinsicWidth > 0) drawable.intrinsicWidth.coerceAtMost(192) else 192
+                val height = if (drawable.intrinsicHeight > 0) drawable.intrinsicHeight.coerceAtMost(192) else 192
+                val bmp = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+                val canvas = Canvas(bmp)
+                drawable.setBounds(0, 0, canvas.width, canvas.height)
+                drawable.draw(canvas)
+                bmp
             }
             bitmapCache.put(packageName, bitmap)
             bitmap

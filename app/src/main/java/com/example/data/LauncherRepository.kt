@@ -37,7 +37,6 @@ import androidx.compose.material.icons.rounded.VideoLibrary
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
-import androidx.core.graphics.drawable.toBitmap
 import com.example.model.AppCategory
 import com.example.model.AppItem
 import com.example.model.LauncherApp
@@ -65,21 +64,18 @@ class LauncherRepository(
     private fun decodeDrawableToImageBitmap(drawable: Drawable?): ImageBitmap? {
         if (drawable == null) return null
         return try {
-            val bitmap = when (drawable) {
-                is BitmapDrawable -> drawable.bitmap
-                is ColorDrawable -> {
-                    val bmp = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
-                    val canvas = Canvas(bmp)
-                    drawable.draw(canvas)
-                    bmp
-                }
-                else -> {
-                    val width = if (drawable.intrinsicWidth > 0) drawable.intrinsicWidth.coerceAtMost(192) else 96
-                    val height = if (drawable.intrinsicHeight > 0) drawable.intrinsicHeight.coerceAtMost(192) else 96
-                    drawable.toBitmap(width, height, Bitmap.Config.ARGB_8888)
-                }
+            val bitmap = if (drawable is BitmapDrawable && drawable.bitmap != null) {
+                drawable.bitmap
+            } else {
+                val width = if (drawable.intrinsicWidth > 0) drawable.intrinsicWidth.coerceAtMost(192) else 96
+                val height = if (drawable.intrinsicHeight > 0) drawable.intrinsicHeight.coerceAtMost(192) else 96
+                val bmp = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+                val canvas = Canvas(bmp)
+                drawable.setBounds(0, 0, canvas.width, canvas.height)
+                drawable.draw(canvas)
+                bmp
             }
-            bitmap?.asImageBitmap()
+            bitmap.asImageBitmap()
         } catch (e: Exception) {
             null
         }
