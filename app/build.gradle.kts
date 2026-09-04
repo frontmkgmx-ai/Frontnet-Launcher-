@@ -17,7 +17,7 @@ android {
   compileSdk { version = release(36) { minorApiLevel = 1 } }
 
   defaultConfig {
-    applicationId = "com.aistudio.homelauncher.vyqm"
+    applicationId = "com.frontmk.launcher"
     minSdk = 24
     targetSdk = 36
     
@@ -31,7 +31,7 @@ android {
     val finalVersionCode = ciVersionCode ?: localVersionCode
 
     versionCode = finalVersionCode
-    versionName = "1.2.3"
+    versionName = "1.2.4"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }
