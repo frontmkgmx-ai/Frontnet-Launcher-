@@ -17,9 +17,10 @@ local.properties
 .env
 debug.keystore
 
-*.apk
-*.aab
-ci-debug.keystore
-*.zip
+app/build/
 .gradle/
 build/
+*.aab
+ci-debug.keystore
+front-launcher-project.zip
+!FrontLauncher-debug.apk

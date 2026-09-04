@@ -15,7 +15,7 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Set up JDK 17 with Native Gradle Cache
+      - name: Set up JDK 17 with Gradle Cache
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
@@ -25,15 +25,17 @@ jobs:
       - name: Make Gradlew Executable
         run: chmod +x gradlew
 
-      - name: Ensure Persistent Keystore Exists
+      - name: Ensure Keystore Exists
         run: |
-          rm -f ci-debug.keystore
-          keytool -genkey -v -keystore ci-debug.keystore -storetype JKS -storepass androiddebug -alias androiddebugkey -keypass androiddebugkey -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=FrontLauncher,O=CI,C=US"
+          mkdir -p app
+          if [ ! -f app/ci-debug.keystore ]; then
+            keytool -genkey -v -keystore app/ci-debug.keystore -storepass androiddebug -alias androiddebugkey -keypass androiddebugkey -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=FrontLauncher,O=CI,C=US"
+          fi
 
       - name: Generate google-services.json if missing
         run: |
           if [ ! -f "app/google-services.json" ]; then
-            echo '{"project_info":{"project_number":"123456789","project_id":"front-launcher-ci","storage_bucket":"front.appspot.com"},"client":[{"client_info":{"mobilesdk_app_id":"1:123456789:android:abcdef","android_client_info":{"package_name":"com.example"}},"api_key":[{"current_key":"mock_api_key"}],"services":{"analytics_service":{"status":1}}}]}' > app/google-services.json
+            echo '{"project_info":{"project_number":"123456789","project_id":"front-launcher-ci","storage_bucket":"front.appspot.com"},"client":[{"client_info":{"mobilesdk_app_id":"1:123456789:android:abcdef","android_client_info":{"package_name":"com.frontmk.launcher"}},"api_key":[{"current_key":"mock_api_key"}],"services":{"analytics_service":{"status":1}}}]}' > app/google-services.json
           fi
 
       - name: Compile Debug APK
@@ -45,9 +47,9 @@ jobs:
       - name: Compile App Bundle (AAB)
         run: ./gradlew bundleRelease -x test -x lint -x lintVitalRelease -x lintVitalAnalyzeRelease --stacktrace --no-daemon
 
-      - name: Package Android Studio Source
+      - name: Package Source for Android Studio
         run: |
-          zip -r front-launcher-project.zip . -x ".git/*" ".gradle/*" "*/build/*" ".idea/*" "*.apk" "*.aab"
+          zip -r front-launcher-project.zip . -x ".git/*" ".gradle/*" "*/build/*" ".idea/*"
 
       - name: Upload Debug APK
         uses: actions/upload-artifact@v4
@@ -76,13 +78,3 @@ jobs:
           name: FrontLauncher-Studio-Source
           path: front-launcher-project.zip
           retention-days: 14
-
-      - name: Commit Debug APK to Repository Root
-        if: github.event_name == 'push'
-        run: |
-          cp app/build/outputs/apk/debug/*.apk ./FrontLauncher-debug.apk
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add FrontLauncher-debug.apk
-          git diff --quiet && git diff --staged --quiet || (git commit -m "chore(ci): update FrontLauncher-debug.apk at root" && git push origin main)
-
