@@ -1,0 +1,21 @@
+<resources>
+    <string name="app_name">Home Launcher</string>
+    <string name="launcher_search_placeholder">Search apps, web, actions…</string>
+    <string name="drawer_title">All Apps</string>
+    <string name="categories_title">Categories</string>
+    <string name="ai_suggestions_title">AI Daily Suggestions</string>
+    <string name="ai_suggestions_subtitle">Smart contextual shortcuts based on your daily routine</string>
+    <string name="settings_title">Launcher Settings</string>
+    <string name="theme_monet">Material You (Dynamic)</string>
+    <string name="theme_oneui">One UI Experience</string>
+    <string name="theme_hyperos">HyperOS Glass</string>
+    <string name="icon_shape_circle">Circle</string>
+    <string name="icon_shape_squircle">Squircle (One UI)</string>
+    <string name="icon_shape_rounded">Rounded Square (HyperOS)</string>
+    <string name="icon_shape_teardrop">Teardrop</string>
+    <string name="gesture_swipe_up">Swipe Up: App Drawer</string>
+    <string name="gesture_swipe_down">Swipe Down: Quick Search</string>
+    <string name="gesture_double_tap">Double Tap: AI Routine</string>
+    <string name="gesture_pinch">Pinch: Customize &amp; Wallpapers</string>
+</resources>
+

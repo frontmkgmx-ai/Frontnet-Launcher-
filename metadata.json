@@ -1,0 +1,6 @@
+{
+  "name": "Home Launcher",
+  "description": "Android Home Launcher with customizable icons, smart gestures, automatic category organization, Material You dynamic wallpaper theming, and AI daily shortcut suggestions compatible with One UI and HyperOS styles.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
