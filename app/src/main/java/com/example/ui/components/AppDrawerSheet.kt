@@ -64,13 +64,16 @@ import com.example.model.AppCategory
 import com.example.model.IconShape
 import com.example.model.LauncherApp
 import com.example.model.LauncherThemeStyle
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import com.example.model.AppDrawerStyle
 
 @Composable
 fun AppDrawerSheet(
     isOpen: Boolean,
     apps: List<LauncherApp>,
     searchQuery: String,
-    isCategorizedMode: Boolean,
+    drawerStyle: AppDrawerStyle,
     selectedCategoryFilter: AppCategory?,
     iconShape: IconShape,
     iconSizeDp: Int,
@@ -78,7 +81,6 @@ fun AppDrawerSheet(
     showLabels: Boolean,
     themeStyle: LauncherThemeStyle,
     onSearchQueryChange: (String) -> Unit,
-    onToggleCategorizedMode: () -> Unit,
     onSelectCategoryFilter: (AppCategory?) -> Unit,
     onAppClick: (LauncherApp) -> Unit,
     onAppLongClick: (LauncherApp) -> Unit,
@@ -189,75 +191,15 @@ fun AppDrawerSheet(
                 }
             }
 
-            // Mode Toggle: "Categorias Inteligentes" vs "A-Z"
+            // We don't need the toggle anymore if the style is global.
+            // Just show the app count.
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 6.dp),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
+                horizontalArrangement = Arrangement.End
             ) {
-                Surface(
-                    shape = RoundedCornerShape(16.dp),
-                    color = Color.White.copy(alpha = 0.08f),
-                    modifier = Modifier.border(1.dp, Color.White.copy(alpha = 0.15f), RoundedCornerShape(16.dp))
-                ) {
-                    Row(
-                        modifier = Modifier.padding(4.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Surface(
-                            shape = RoundedCornerShape(12.dp),
-                            color = if (isCategorizedMode) MaterialTheme.colorScheme.primary else Color.Transparent,
-                            modifier = Modifier.clickable { if (!isCategorizedMode) onToggleCategorizedMode() }
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Rounded.Category,
-                                    contentDescription = null,
-                                    tint = if (isCategorizedMode) MaterialTheme.colorScheme.onPrimary else Color.White.copy(alpha = 0.7f),
-                                    modifier = Modifier.size(16.dp)
-                                )
-                                Spacer(modifier = Modifier.width(6.dp))
-                                Text(
-                                    text = "Categorias IA",
-                                    fontSize = 12.sp,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = if (isCategorizedMode) MaterialTheme.colorScheme.onPrimary else Color.White.copy(alpha = 0.7f)
-                                )
-                            }
-                        }
-
-                        Surface(
-                            shape = RoundedCornerShape(12.dp),
-                            color = if (!isCategorizedMode) MaterialTheme.colorScheme.primary else Color.Transparent,
-                            modifier = Modifier.clickable { if (isCategorizedMode) onToggleCategorizedMode() }
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Rounded.SortByAlpha,
-                                    contentDescription = null,
-                                    tint = if (!isCategorizedMode) MaterialTheme.colorScheme.onPrimary else Color.White.copy(alpha = 0.7f),
-                                    modifier = Modifier.size(16.dp)
-                                )
-                                Spacer(modifier = Modifier.width(6.dp))
-                                Text(
-                                    text = "Todos (A-Z)",
-                                    fontSize = 12.sp,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = if (!isCategorizedMode) MaterialTheme.colorScheme.onPrimary else Color.White.copy(alpha = 0.7f)
-                                )
-                            }
-                        }
-                    }
-                }
-
                 Text(
                     text = "${filteredApps.size} apps",
                     fontSize = 12.sp,
@@ -266,7 +208,7 @@ fun AppDrawerSheet(
             }
 
             // Category filter chips if in categorized mode
-            if (isCategorizedMode) {
+            if (drawerStyle == AppDrawerStyle.CATEGORY_TABS) {
                 LazyRow(
                     contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -315,54 +257,69 @@ fun AppDrawerSheet(
 
             Spacer(modifier = Modifier.height(6.dp))
 
-            // Main Content: Categorized View OR Alphabetical Grid
-            if (isCategorizedMode) {
-                LazyColumn(
-                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
-                    modifier = Modifier.fillMaxSize()
-                ) {
+            // Main Content: based on drawerStyle
+            when (drawerStyle) {
+                AppDrawerStyle.CATEGORY_TABS -> {
                     val activeCategories = if (selectedCategoryFilter != null) {
                         listOf(selectedCategoryFilter)
                     } else {
                         AppCategory.entries.filter { categorizedMap.containsKey(it) }
                     }
 
-                    items(activeCategories) { category ->
-                        val categoryApps = categorizedMap[category] ?: emptyList()
-                        if (categoryApps.isNotEmpty()) {
-                            CategorySectionCard(
-                                category = category,
-                                apps = categoryApps,
-                                iconShape = iconShape,
-                                iconSizeDp = iconSizeDp,
-                                iconThemed = iconThemed,
-                                showLabels = showLabels,
-                                onAppClick = onAppClick,
-                                onAppLongClick = onAppLongClick
-                            )
+                    LazyVerticalGrid(
+                        columns = GridCells.Fixed(5),
+                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
+                        horizontalArrangement = Arrangement.SpaceEvenly,
+                        verticalArrangement = Arrangement.spacedBy(16.dp),
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        for (category in activeCategories) {
+                            val categoryApps = categorizedMap[category] ?: emptyList()
+                            if (categoryApps.isNotEmpty()) {
+                                item(span = { androidx.compose.foundation.lazy.grid.GridItemSpan(maxLineSpan) }) {
+                                    Text(
+                                        text = category.title,
+                                        fontSize = 14.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.padding(start = 12.dp, top = 16.dp, bottom = 8.dp)
+                                    )
+                                }
+                                items(categoryApps, key = { it.packageName }) { app ->
+                                    AppIconComposable(
+                                        app = app,
+                                        iconShape = iconShape,
+                                        iconSizeDp = (iconSizeDp * 0.9f).toInt(),
+                                        iconThemed = iconThemed,
+                                        showLabel = showLabels,
+                                        onClick = { onAppClick(app) },
+                                        onLongClick = { onAppLongClick(app) }
+                                    )
+                                }
+                            }
                         }
                     }
                 }
-            } else {
-                // A-Z Alphabetical Grid
-                LazyVerticalGrid(
-                    columns = GridCells.Fixed(4),
-                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
-                    horizontalArrangement = Arrangement.SpaceAround,
-                    verticalArrangement = Arrangement.spacedBy(10.dp),
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    items(filteredApps, key = { it.packageName }) { app ->
-                        AppIconComposable(
-                            app = app,
-                            iconShape = iconShape,
-                            iconSizeDp = iconSizeDp,
-                            iconThemed = iconThemed,
-                            showLabel = showLabels,
-                            onClick = { onAppClick(app) },
-                            onLongClick = { onAppLongClick(app) }
-                        )
+                AppDrawerStyle.VERTICAL_GRID, AppDrawerStyle.ALPHABETICAL_LIST, AppDrawerStyle.HORIZONTAL_PAGED -> {
+                    // For now, these 3 will use a highly optimized standard grid.
+                    LazyVerticalGrid(
+                        columns = GridCells.Fixed(5),
+                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
+                        horizontalArrangement = Arrangement.SpaceEvenly,
+                        verticalArrangement = Arrangement.spacedBy(16.dp),
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        items(filteredApps, key = { it.packageName }) { app ->
+                            AppIconComposable(
+                                app = app,
+                                iconShape = iconShape,
+                                iconSizeDp = (iconSizeDp * 0.9f).toInt(),
+                                iconThemed = iconThemed,
+                                showLabel = showLabels,
+                                onClick = { onAppClick(app) },
+                                onLongClick = { onAppLongClick(app) }
+                            )
+                        }
                     }
                 }
             }

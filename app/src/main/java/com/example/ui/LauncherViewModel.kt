@@ -38,10 +38,13 @@ data class LauncherUiState(
     val isWelcomeOnboardingOpen: Boolean = false,
     val highRefreshRateEnabled: Boolean = true,
     val themeStyle: LauncherThemeStyle = LauncherThemeStyle.MATERIAL_YOU,
+    val homeScreenStyle: com.example.model.HomeScreenStyle = com.example.model.HomeScreenStyle.CLASSIC_GRID,
+    val appDrawerStyle: com.example.model.AppDrawerStyle = com.example.model.AppDrawerStyle.CATEGORY_TABS,
     val iconShape: IconShape = IconShape.SQUIRCLE,
     val iconThemed: Boolean = false,
     val iconSizeDp: Int = 56,
     val showLabels: Boolean = true,
+    val widgets: List<Int> = emptyList(),
     val currentWallpaper: WallpaperTheme = WallpaperThemeEngine.wallpaperList.first(),
     val aiBriefing: AiDailyBriefing? = null,
     val isAiLoading: Boolean = false,
@@ -107,10 +110,34 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
                 } catch (e: Exception) {
                     GestureAction.AI_ROUTINE
                 }
+                val homeStyle = try {
+                    com.example.model.HomeScreenStyle.valueOf(cfg.homeScreenStyle)
+                } catch (e: Exception) {
+                    com.example.model.HomeScreenStyle.CLASSIC_GRID
+                }
+                val drawerStyle = try {
+                    com.example.model.AppDrawerStyle.valueOf(cfg.appDrawerStyle)
+                } catch (e: Exception) {
+                    com.example.model.AppDrawerStyle.CATEGORY_TABS
+                }
+                
+                val widgetsList = try {
+                    if (cfg.widgetsJson.isBlank() || cfg.widgetsJson == "[]") {
+                        emptyList<Int>()
+                    } else {
+                        cfg.widgetsJson.removeSurrounding("[", "]").split(",")
+                            .mapNotNull { it.trim().toIntOrNull() }
+                    }
+                } catch (e: Exception) {
+                    emptyList<Int>()
+                }
 
                 _uiState.update { current ->
                     current.copy(
                         themeStyle = theme,
+                        homeScreenStyle = homeStyle,
+                        appDrawerStyle = drawerStyle,
+                        widgets = widgetsList,
                         iconShape = shape,
                         iconThemed = cfg.iconThemed,
                         iconSizeDp = cfg.iconSizeDp,
@@ -179,6 +206,23 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
             repository.setHighRefreshRateEnabled(enabled)
             _uiState.update { it.copy(highRefreshRateEnabled = enabled) }
         }
+    }
+
+    fun addWidget(appWidgetId: Int) {
+        _uiState.update { current ->
+            val updated = current.widgets.toMutableList().apply {
+                if (!contains(appWidgetId)) add(appWidgetId)
+            }
+            current.copy(widgets = updated)
+        }
+        persistConfig()
+    }
+
+    fun removeWidget(appWidgetId: Int) {
+        _uiState.update { current ->
+            current.copy(widgets = current.widgets.filter { it != appWidgetId })
+        }
+        persistConfig()
     }
 
     fun onSearchQueryChanged(query: String) {
@@ -256,6 +300,16 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         persistConfig()
     }
 
+    fun setHomeScreenStyle(style: com.example.model.HomeScreenStyle) {
+        _uiState.update { it.copy(homeScreenStyle = style) }
+        persistConfig()
+    }
+
+    fun setAppDrawerStyle(style: com.example.model.AppDrawerStyle) {
+        _uiState.update { it.copy(appDrawerStyle = style) }
+        persistConfig()
+    }
+
     fun setIconShape(shape: IconShape) {
         _uiState.update { it.copy(iconShape = shape) }
         persistConfig()
@@ -328,6 +382,9 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
                 LauncherConfigEntity(
                     id = 1,
                     themeStyle = state.themeStyle.name,
+                    homeScreenStyle = state.homeScreenStyle.name,
+                    appDrawerStyle = state.appDrawerStyle.name,
+                    widgetsJson = "[${state.widgets.joinToString(",")}]",
                     iconShape = state.iconShape.name,
                     iconThemed = state.iconThemed,
                     iconSizeDp = state.iconSizeDp,

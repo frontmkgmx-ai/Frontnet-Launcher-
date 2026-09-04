@@ -1,4 +1,6 @@
 import com.google.gms.googleservices.GoogleServicesPlugin.MissingGoogleServicesStrategy
+import java.util.Properties
+import java.io.FileInputStream
 
 plugins {
   alias(libs.plugins.android.application)
@@ -17,8 +19,18 @@ android {
     applicationId = "com.aistudio.homelauncher.vyqm"
     minSdk = 24
     targetSdk = 36
-    versionCode = 1
-    versionName = "1.0"
+    
+    val versionPropsFile = rootProject.file("version.properties")
+    val versionProps = Properties()
+    if (versionPropsFile.exists()) {
+        versionProps.load(FileInputStream(versionPropsFile))
+    }
+    val localVersionCode = versionProps["VERSION_CODE"]?.toString()?.toIntOrNull() ?: 1
+    val ciVersionCode = System.getenv("GITHUB_RUN_NUMBER")?.toIntOrNull()
+    val finalVersionCode = ciVersionCode ?: localVersionCode
+
+    versionCode = finalVersionCode
+    versionName = "1.$finalVersionCode"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }

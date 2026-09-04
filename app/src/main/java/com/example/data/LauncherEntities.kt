@@ -27,6 +27,9 @@ data class LauncherConfigEntity(
     val gridColumns: Int = 4,
     val wallpaperId: String = "monet_aurora",
     val drawerCategorized: Boolean = true,
+    val homeScreenStyle: String = "CLASSIC_GRID",
+    val appDrawerStyle: String = "CATEGORY_TABS",
+    val widgetsJson: String = "[]",
     val gestureSwipeDownAction: String = "SEARCH", // SEARCH, NOTIFICATIONS, AI_ASSISTANT
     val gestureDoubleTapAction: String = "AI_ROUTINE", // AI_ROUTINE, LOCK, APP_DRAWER
     val isFirstRunCompleted: Boolean = false,

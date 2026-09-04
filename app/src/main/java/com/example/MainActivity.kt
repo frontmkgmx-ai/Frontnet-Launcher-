@@ -17,14 +17,64 @@ import com.example.ui.HomeScreen
 import com.example.ui.LauncherViewModel
 import com.example.ui.theme.MyApplicationTheme
 
+import android.app.Activity
+import android.appwidget.AppWidgetManager
+import android.content.Intent
+import androidx.activity.result.contract.ActivityResultContracts
+import com.example.widget.WidgetHostManager
+
 class MainActivity : ComponentActivity() {
 
   private val viewModel: LauncherViewModel by viewModels()
+  lateinit var widgetHostManager: WidgetHostManager
+
+  private val pickWidgetLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+    if (result.resultCode == Activity.RESULT_OK) {
+        val appWidgetId = result.data?.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, -1) ?: -1
+        if (appWidgetId != -1) {
+            val appWidgetInfo = widgetHostManager.appWidgetManager.getAppWidgetInfo(appWidgetId)
+            if (appWidgetInfo.configure != null) {
+                // Needs configuration
+                val intent = Intent(AppWidgetManager.ACTION_APPWIDGET_CONFIGURE)
+                intent.component = appWidgetInfo.configure
+                intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
+                configureWidgetLauncher.launch(intent)
+            } else {
+                // Ready to add
+                viewModel.addWidget(appWidgetId)
+            }
+        }
+    } else {
+        // Cancelled, delete the allocated ID
+        val appWidgetId = result.data?.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, -1) ?: -1
+        if (appWidgetId != -1) {
+            widgetHostManager.deleteAppWidgetId(appWidgetId)
+        }
+    }
+  }
+
+  private val configureWidgetLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+      val appWidgetId = result.data?.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, -1) ?: -1
+      if (result.resultCode == Activity.RESULT_OK && appWidgetId != -1) {
+          viewModel.addWidget(appWidgetId)
+      } else if (appWidgetId != -1) {
+          widgetHostManager.deleteAppWidgetId(appWidgetId)
+      }
+  }
+
+  fun launchWidgetPicker() {
+      val appWidgetId = widgetHostManager.allocateAppWidgetId()
+      val pickIntent = Intent(AppWidgetManager.ACTION_APPWIDGET_PICK)
+      pickIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
+      pickWidgetLauncher.launch(pickIntent)
+  }
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     enableEdgeToEdge()
     applyHighRefreshRate(true)
+
+    widgetHostManager = WidgetHostManager(this)
 
     setContent {
       val uiState by viewModel.uiState.collectAsState()
@@ -86,6 +136,16 @@ class MainActivity : ComponentActivity() {
     } catch (e: Exception) {
       // Ignored if device vendor restricts manual display mode override
     }
+  }
+
+  override fun onStart() {
+    super.onStart()
+    widgetHostManager.startListening()
+  }
+
+  override fun onStop() {
+    super.onStop()
+    widgetHostManager.stopListening()
   }
 
   override fun onResume() {

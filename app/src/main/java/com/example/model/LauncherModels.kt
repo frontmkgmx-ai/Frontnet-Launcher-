@@ -42,6 +42,19 @@ enum class IconShape(val label: String, val cornerPercent: Int) {
     TEARDROP("Gota Dinâmica", 16)
 }
 
+enum class HomeScreenStyle(val displayName: String) {
+    CLASSIC_GRID("Grade Clássica"),
+    MINIMALIST_TEXT("Texto Minimalista"),
+    DOCK_ONLY("Apenas Dock expansível")
+}
+
+enum class AppDrawerStyle(val displayName: String) {
+    VERTICAL_GRID("Grade Vertical contínua"),
+    ALPHABETICAL_LIST("Lista Alfabética (A-Z)"),
+    HORIZONTAL_PAGED("Páginas Horizontais"),
+    CATEGORY_TABS("Abas por Categoria (IA)")
+}
+
 enum class LauncherThemeStyle(val displayName: String, val description: String) {
     MATERIAL_YOU("Material You Monet", "Design dinâmico do Android com paleta harmônica e cantos pílula"),
     ONE_UI("Samsung One UI", "Ergonomia focada na metade inferior, cards fáceis de alcançar e squircle"),

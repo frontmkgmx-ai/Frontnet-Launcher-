@@ -66,11 +66,16 @@ import com.example.model.LauncherThemeStyle
 import com.example.ui.theme.WallpaperTheme
 import com.example.ui.theme.WallpaperThemeEngine
 
+import com.example.model.AppDrawerStyle
+import com.example.model.HomeScreenStyle
+
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun CustomizeLauncherSheet(
     isOpen: Boolean,
     themeStyle: LauncherThemeStyle,
+    homeScreenStyle: HomeScreenStyle = HomeScreenStyle.CLASSIC_GRID,
+    appDrawerStyle: AppDrawerStyle = AppDrawerStyle.CATEGORY_TABS,
     iconShape: IconShape,
     iconThemed: Boolean,
     iconSizeDp: Int,
@@ -80,6 +85,8 @@ fun CustomizeLauncherSheet(
     gestureDoubleTap: GestureAction,
     highRefreshRateEnabled: Boolean,
     onThemeStyleChange: (LauncherThemeStyle) -> Unit,
+    onHomeScreenStyleChange: ((HomeScreenStyle) -> Unit)? = null,
+    onAppDrawerStyleChange: ((AppDrawerStyle) -> Unit)? = null,
     onIconShapeChange: (IconShape) -> Unit,
     onIconThemedChange: (Boolean) -> Unit,
     onIconSizeChange: (Int) -> Unit,
@@ -89,6 +96,7 @@ fun CustomizeLauncherSheet(
     onGestureDoubleTapChange: (GestureAction) -> Unit,
     onHighRefreshRateChange: (Boolean) -> Unit,
     onOpenWelcomeOnboarding: () -> Unit,
+    onAddWidgetClick: () -> Unit = {},
     onClose: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -215,6 +223,21 @@ fun CustomizeLauncherSheet(
                                     }
                                 }
                             }
+                        }
+                    }
+                }
+
+                item {
+                    SettingsCard(
+                        title = "Widgets Android",
+                        subtitle = "Adicione widgets nativos à tela inicial",
+                        icon = Icons.Rounded.SmartButton
+                    ) {
+                        OutlinedButton(
+                            onClick = onAddWidgetClick,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text("Adicionar Novo Widget")
                         }
                     }
                 }

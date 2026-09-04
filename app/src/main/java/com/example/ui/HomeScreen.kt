@@ -52,6 +52,14 @@ import com.example.ui.components.HomeScreenHeader
 import com.example.ui.components.SearchSheet
 import com.example.ui.components.WelcomeOnboardingScreen
 
+import com.example.MainActivity
+import com.example.widget.AppWidgetComposable
+import androidx.compose.ui.platform.LocalContext
+
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.material3.Text
+import androidx.compose.foundation.clickable
+
 @Composable
 fun HomeScreen(
     viewModel: LauncherViewModel,
@@ -59,6 +67,8 @@ fun HomeScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
+    val context = LocalContext.current
+    val activity = context as? MainActivity
 
     LaunchedEffect(uiState.statusMessage) {
         val msg = uiState.statusMessage
@@ -98,18 +108,11 @@ fun HomeScreen(
                         }
                         verticalDragAmount = 0f
                     },
-                    onVerticalDrag = { _, dragAmount ->
+                    onVerticalDrag = { change, dragAmount ->
+                        change.consume()
                         verticalDragAmount += dragAmount
                     }
                 )
-            }
-            .pointerInput(Unit) {
-                detectTransformGestures { _, _, zoom, _ ->
-                    if (zoom < 0.85f) {
-                        // Pinch to customize
-                        viewModel.openCustomizeSheet(true)
-                    }
-                }
             }
             .testTag("home_screen_canvas")
     ) {
@@ -142,6 +145,41 @@ fun HomeScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
+            // User Widgets
+            if (uiState.widgets.isNotEmpty() && activity != null) {
+                Column(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    uiState.widgets.forEach { appWidgetId ->
+                        val providerInfo = remember(appWidgetId) {
+                            activity.widgetHostManager.appWidgetManager.getAppWidgetInfo(appWidgetId)
+                        }
+                        if (providerInfo != null) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(150.dp)
+                                    .pointerInput(Unit) {
+                                        detectTapGestures(
+                                            onLongPress = {
+                                                viewModel.removeWidget(appWidgetId)
+                                                activity.widgetHostManager.deleteAppWidgetId(appWidgetId)
+                                            }
+                                        )
+                                    }
+                            ) {
+                                AppWidgetComposable(
+                                    widgetHostManager = activity.widgetHostManager,
+                                    appWidgetId = appWidgetId,
+                                    providerInfo = providerInfo
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
             // Primary Home Apps Grid (Top Favorites / Frequently Used + Front Settings Shortcut)
             val homeApps = remember(uiState.apps, uiState.dockApps) {
                 val nonDockApps = uiState.apps.filter { !it.isPinnedToDock }
@@ -161,28 +199,49 @@ fun HomeScreen(
                     .padding(horizontal = 16.dp),
                 verticalArrangement = Arrangement.Center
             ) {
-                val rows = homeApps.chunked(4)
-                for (row in rows) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 6.dp),
-                        horizontalArrangement = Arrangement.SpaceAround
-                    ) {
-                        for (app in row) {
-                            AppIconComposable(
-                                app = app,
-                                iconShape = uiState.iconShape,
-                                iconSizeDp = uiState.iconSizeDp,
-                                iconThemed = uiState.iconThemed,
-                                showLabel = uiState.showLabels,
-                                onClick = { viewModel.launchApp(app) },
-                                onLongClick = { viewModel.openAppMenu(app) }
+                when (uiState.homeScreenStyle) {
+                    com.example.model.HomeScreenStyle.CLASSIC_GRID -> {
+                        val rows = homeApps.chunked(4)
+                        for (row in rows) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 6.dp),
+                                horizontalArrangement = Arrangement.SpaceAround
+                            ) {
+                                for (app in row) {
+                                    AppIconComposable(
+                                        app = app,
+                                        iconShape = uiState.iconShape,
+                                        iconSizeDp = uiState.iconSizeDp,
+                                        iconThemed = uiState.iconThemed,
+                                        showLabel = uiState.showLabels,
+                                        onClick = { viewModel.launchApp(app) },
+                                        onLongClick = { viewModel.openAppMenu(app) }
+                                    )
+                                }
+                                for (i in row.size until 4) {
+                                    Spacer(modifier = Modifier.fillMaxWidth(0.25f))
+                                }
+                            }
+                        }
+                    }
+                    com.example.model.HomeScreenStyle.MINIMALIST_TEXT -> {
+                        for (app in homeApps) {
+                            Text(
+                                text = app.label.lowercase(),
+                                fontSize = 24.sp,
+                                fontWeight = FontWeight.Light,
+                                color = Color.White,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 8.dp)
+                                    .clickable { viewModel.launchApp(app) }
                             )
                         }
-                        for (i in row.size until 4) {
-                            Spacer(modifier = Modifier.fillMaxWidth(0.25f))
-                        }
+                    }
+                    com.example.model.HomeScreenStyle.DOCK_ONLY -> {
+                        // Empty middle area, everything is in the dock or widgets
                     }
                 }
             }
@@ -212,7 +271,7 @@ fun HomeScreen(
                 isOpen = uiState.isDrawerOpen,
                 apps = uiState.apps,
                 searchQuery = uiState.searchQuery,
-                isCategorizedMode = uiState.drawerCategorized,
+                drawerStyle = uiState.appDrawerStyle,
                 selectedCategoryFilter = uiState.selectedCategoryFilter,
                 iconShape = uiState.iconShape,
                 iconSizeDp = uiState.iconSizeDp,
@@ -220,7 +279,6 @@ fun HomeScreen(
                 showLabels = uiState.showLabels,
                 themeStyle = uiState.themeStyle,
                 onSearchQueryChange = { viewModel.onSearchQueryChanged(it) },
-                onToggleCategorizedMode = { viewModel.toggleDrawerCategorized() },
                 onSelectCategoryFilter = { viewModel.selectCategoryFilter(it) },
                 onAppClick = { viewModel.launchApp(it) },
                 onAppLongClick = { viewModel.openAppMenu(it) },
@@ -237,6 +295,8 @@ fun HomeScreen(
             CustomizeLauncherSheet(
                 isOpen = uiState.isCustomizeSheetOpen,
                 themeStyle = uiState.themeStyle,
+                homeScreenStyle = uiState.homeScreenStyle,
+                appDrawerStyle = uiState.appDrawerStyle,
                 iconShape = uiState.iconShape,
                 iconThemed = uiState.iconThemed,
                 iconSizeDp = uiState.iconSizeDp,
@@ -246,6 +306,8 @@ fun HomeScreen(
                 gestureDoubleTap = uiState.gestureDoubleTap,
                 highRefreshRateEnabled = uiState.highRefreshRateEnabled,
                 onThemeStyleChange = { viewModel.setLauncherThemeStyle(it) },
+                onHomeScreenStyleChange = { viewModel.setHomeScreenStyle(it) },
+                onAppDrawerStyleChange = { viewModel.setAppDrawerStyle(it) },
                 onIconShapeChange = { viewModel.setIconShape(it) },
                 onIconThemedChange = { viewModel.setIconThemed(it) },
                 onIconSizeChange = { viewModel.setIconSize(it) },
@@ -255,6 +317,10 @@ fun HomeScreen(
                 onGestureDoubleTapChange = { viewModel.setGestureDoubleTap(it) },
                 onHighRefreshRateChange = { viewModel.setHighRefreshRateEnabled(it) },
                 onOpenWelcomeOnboarding = { viewModel.setWelcomeOnboardingOpen(true) },
+                onAddWidgetClick = {
+                    activity?.launchWidgetPicker()
+                    viewModel.openCustomizeSheet(false)
+                },
                 onClose = { viewModel.openCustomizeSheet(false) }
             )
         }
