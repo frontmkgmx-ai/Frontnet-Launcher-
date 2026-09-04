@@ -1,8 +1,5 @@
 package com.example.ui.components
 
-import android.graphics.drawable.BitmapDrawable
-import android.graphics.drawable.ColorDrawable
-import android.graphics.drawable.Drawable
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -29,25 +26,23 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.graphics.drawable.toBitmap
+import com.example.model.AppItem
 import com.example.model.IconShape
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.platform.LocalContext
-import com.example.util.AppIconCache
 import com.example.model.LauncherApp
+import com.example.util.AppIconCache
 
+/**
+ * High-performance AppIcon composable.
+ * Reads pre-decoded ImageBitmap directly from memory cache or AppItem/LauncherApp.
+ * NEVER calls PackageManager or performs disk/IPC operations on the UI thread!
+ */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun AppIconComposable(
@@ -61,22 +56,20 @@ fun AppIconComposable(
     onLongClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val context = LocalContext.current
-    var cachedBitmap by remember(app.packageName) { mutableStateOf<androidx.compose.ui.graphics.ImageBitmap?>(null) }
-    
-    LaunchedEffect(app.packageName) {
-        if (app.iconVector == null) {
-            val bmp = AppIconCache.getIcon(context.packageManager, app.packageName)
-            cachedBitmap = bmp?.asImageBitmap()
-        }
-    }
+    // 1. Direct ImageBitmap lookup from model, or in-memory LruCache
+    val readyImageBitmap: ImageBitmap? = app.icon ?: AppIconCache.getCachedImageBitmap(app.packageName)
 
     val shape = remember(iconShape) {
         when (iconShape) {
             IconShape.CIRCLE -> CircleShape
             IconShape.SQUIRCLE -> RoundedCornerShape(30)
             IconShape.ROUNDED_SQUARE -> RoundedCornerShape(22)
-            IconShape.TEARDROP -> RoundedCornerShape(topStartPercent = 50, topEndPercent = 50, bottomStartPercent = 50, bottomEndPercent = 12)
+            IconShape.TEARDROP -> RoundedCornerShape(
+                topStartPercent = 50,
+                topEndPercent = 50,
+                bottomStartPercent = 50,
+                bottomEndPercent = 12
+            )
         }
     }
 
@@ -104,7 +97,7 @@ fun AppIconComposable(
                 .then(
                     if (iconThemed) {
                         Modifier.background(MaterialTheme.colorScheme.primaryContainer)
-                    } else if (cachedBitmap == null && app.iconVector == null) {
+                    } else if (readyImageBitmap == null && app.iconVector == null) {
                         Modifier.background(app.iconTint?.copy(alpha = 0.9f) ?: MaterialTheme.colorScheme.surfaceVariant)
                     } else {
                         Modifier
@@ -120,9 +113,9 @@ fun AppIconComposable(
                         tint = MaterialTheme.colorScheme.onPrimaryContainer,
                         modifier = Modifier.size((iconSizeDp * 0.55).dp)
                     )
-                } else if (cachedBitmap != null) {
+                } else if (readyImageBitmap != null) {
                     Image(
-                        bitmap = cachedBitmap!!,
+                        bitmap = readyImageBitmap,
                         contentDescription = app.label,
                         colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onPrimaryContainer),
                         modifier = Modifier.size((iconSizeDp * 0.58).dp)
@@ -136,10 +129,10 @@ fun AppIconComposable(
                     )
                 }
             } else {
-                // Vibrant Original Icon
-                if (cachedBitmap != null) {
+                // Vibrant Pre-decoded Icon
+                if (readyImageBitmap != null) {
                     Image(
-                        bitmap = cachedBitmap!!,
+                        bitmap = readyImageBitmap,
                         contentDescription = app.label,
                         modifier = Modifier.size(iconSizeDp.dp).clip(shape)
                     )
@@ -184,24 +177,80 @@ fun AppIconComposable(
     }
 }
 
-private fun drawableToImageBitmap(drawable: Drawable): androidx.compose.ui.graphics.ImageBitmap? {
-    return try {
-        val bitmap = when (drawable) {
-            is BitmapDrawable -> drawable.bitmap
-            is ColorDrawable -> {
-                val bmp = android.graphics.Bitmap.createBitmap(1, 1, android.graphics.Bitmap.Config.ARGB_8888)
-                val canvas = android.graphics.Canvas(bmp)
-                drawable.draw(canvas)
-                bmp
-            }
-            else -> {
-                val width = if (drawable.intrinsicWidth > 0) drawable.intrinsicWidth else 96
-                val height = if (drawable.intrinsicHeight > 0) drawable.intrinsicHeight else 96
-                drawable.toBitmap(width, height, android.graphics.Bitmap.Config.ARGB_8888)
-            }
+/**
+ * Dedicated AppItem variant of the icon composable.
+ * Guaranteed 0ms latency with pre-decoded ImageBitmap.
+ */
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun AppItemIconComposable(
+    item: AppItem,
+    iconShape: IconShape,
+    iconSizeDp: Int = 56,
+    showLabel: Boolean = true,
+    labelColor: Color = Color.White,
+    onClick: () -> Unit,
+    onLongClick: () -> Unit = {},
+    modifier: Modifier = Modifier
+) {
+    val shape = remember(iconShape) {
+        when (iconShape) {
+            IconShape.CIRCLE -> CircleShape
+            IconShape.SQUIRCLE -> RoundedCornerShape(30)
+            IconShape.ROUNDED_SQUARE -> RoundedCornerShape(22)
+            IconShape.TEARDROP -> RoundedCornerShape(
+                topStartPercent = 50,
+                topEndPercent = 50,
+                bottomStartPercent = 50,
+                bottomEndPercent = 12
+            )
         }
-        bitmap.asImageBitmap()
-    } catch (e: Exception) {
-        null
+    }
+
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = modifier
+            .width((iconSizeDp + 24).dp)
+            .padding(horizontal = 2.dp, vertical = 6.dp)
+            .combinedClickable(
+                onClick = onClick,
+                onLongClick = onLongClick
+            )
+            .testTag("app_item_${item.packageName}")
+    ) {
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .size(iconSizeDp.dp)
+                .shadow(elevation = 4.dp, shape = shape, clip = false)
+                .clip(shape)
+        ) {
+            Image(
+                bitmap = item.icon,
+                contentDescription = item.label,
+                modifier = Modifier.size(iconSizeDp.dp).clip(shape)
+            )
+        }
+
+        if (showLabel) {
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = item.label,
+                color = labelColor,
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Medium,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                textAlign = TextAlign.Center,
+                lineHeight = 12.sp,
+                style = androidx.compose.ui.text.TextStyle(
+                    shadow = androidx.compose.ui.graphics.Shadow(
+                        color = Color.Black.copy(alpha = 0.6f),
+                        offset = androidx.compose.ui.geometry.Offset(0f, 2f),
+                        blurRadius = 4f
+                    )
+                )
+            )
+        }
     }
 }

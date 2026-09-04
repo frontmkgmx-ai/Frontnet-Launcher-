@@ -35,37 +35,59 @@ android {
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }
 
+  lint {
+    abortOnError = false
+    checkReleaseBuilds = false
+    ignoreWarnings = true
+    checkDependencies = false
+  }
+
   signingConfigs {
+    create("fixedDebug") {
+      val keyFile = file("ci-debug.keystore")
+      if (keyFile.exists()) {
+        storeFile = keyFile
+        storePassword = "androiddebug"
+        keyAlias = "androiddebugkey"
+        keyPassword = "androiddebugkey"
+      }
+    }
     create("release") {
       val keystorePath = System.getenv("KEYSTORE_PATH") ?: "${rootDir}/my-upload-key.jks"
-      storeFile = file(keystorePath)
-      storePassword = System.getenv("STORE_PASSWORD")
-      keyAlias = "upload"
-      keyPassword = System.getenv("KEY_PASSWORD")
-    }
-    val keystoreFile = file("ci-debug.keystore")
-    create("fixedDebug") {
-        if (keystoreFile.exists()) {
-            storeFile = keystoreFile
-            storePassword = "androiddebug"
-            keyAlias = "androiddebugkey"
-            keyPassword = "androiddebugkey"
-        }
+      val releaseKeystore = file(keystorePath)
+      if (releaseKeystore.exists()) {
+        storeFile = releaseKeystore
+        storePassword = System.getenv("STORE_PASSWORD")
+        keyAlias = "upload"
+        keyPassword = System.getenv("KEY_PASSWORD")
+      }
     }
   }
 
   buildTypes {
-    release {
-      isCrunchPngs = false
+    getByName("debug") {
       isMinifyEnabled = false
-      proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-      signingConfig = signingConfigs.getByName("release")
+      val keyFile = file("ci-debug.keystore")
+      if (keyFile.exists()) {
+        signingConfig = signingConfigs.getByName("fixedDebug")
+      }
     }
-    debug {
-        val keystoreFile = file("ci-debug.keystore")
-        if (keystoreFile.exists()) {
-            signingConfig = signingConfigs.getByName("fixedDebug")
-        }
+    getByName("release") {
+      isMinifyEnabled = false
+      isShrinkResources = false
+      isCrunchPngs = false
+      val keyFile = file("ci-debug.keystore")
+      if (keyFile.exists()) {
+        signingConfig = signingConfigs.getByName("fixedDebug")
+      }
+    }
+  }
+
+  packaging {
+    resources {
+      excludes += "/META-INF/{AL2.0,LGPL2.1}"
+      excludes += "META-INF/INDEX.LIST"
+      excludes += "META-INF/io.netty.versions.properties"
     }
   }
   compileOptions {

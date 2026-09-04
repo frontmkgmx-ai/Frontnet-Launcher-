@@ -11,7 +11,14 @@ import androidx.compose.material.icons.rounded.PlayCircle
 import androidx.compose.material.icons.rounded.SportsEsports
 import androidx.compose.material.icons.rounded.Work
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
+
+data class AppItem(
+    val label: String,
+    val packageName: String,
+    val icon: ImageBitmap // Já decodificado e pronto para renderização
+)
 
 enum class AppCategory(
     val title: String,
@@ -75,6 +82,7 @@ data class LauncherApp(
     val activityName: String = "",
     val label: String,
     val category: AppCategory = AppCategory.OTHER,
+    val icon: ImageBitmap? = null,
     val iconDrawable: Drawable? = null,
     val iconBitmap: android.graphics.Bitmap? = null,
     val iconVector: ImageVector? = null,
@@ -87,7 +95,15 @@ data class LauncherApp(
     val isLauncherSettingsShortcut: Boolean = false,
     val isHidden: Boolean = false,
     val isLocked: Boolean = false
-)
+) {
+    fun toAppItem(fallbackIcon: ImageBitmap): AppItem {
+        return AppItem(
+            label = label,
+            packageName = packageName,
+            icon = icon ?: fallbackIcon
+        )
+    }
+}
 
 data class AiShortcutSuggestion(
     val title: String,

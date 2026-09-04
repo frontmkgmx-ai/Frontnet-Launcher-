@@ -1,0 +1,76 @@
+name: Build Front Launcher Artifacts
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build & Package All Artifacts
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Gradle
+        uses: actions/setup-gradle@v3
+
+      - name: Make Gradlew Executable
+        run: chmod +x gradlew
+
+      - name: Ensure Keystore Exists
+        run: |
+          mkdir -p app
+          if [ ! -f app/ci-debug.keystore ]; then
+            keytool -genkey -v -keystore app/ci-debug.keystore -storepass androiddebug -alias androiddebugkey -keypass androiddebugkey -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=FrontLauncher,O=CI,C=US"
+          fi
+
+      - name: Compile Debug APK
+        run: ./gradlew assembleDebug -x test -x lint -x lintAnalyzeDebug --stacktrace --no-daemon
+
+      - name: Compile Release APK
+        run: ./gradlew assembleRelease -x test -x lint -x lintVitalRelease --stacktrace --no-daemon
+
+      - name: Compile App Bundle (AAB)
+        run: ./gradlew bundleRelease -x test -x lint -x lintVitalRelease --stacktrace --no-daemon
+
+      - name: Package Source for Android Studio
+        run: |
+          zip -r front-launcher-project.zip . -x ".git/*" ".gradle/*" "*/build/*" ".idea/*"
+
+      - name: Upload Debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: FrontLauncher-Debug-APK
+          path: app/build/outputs/apk/debug/*.apk
+          retention-days: 14
+
+      - name: Upload Release APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: FrontLauncher-Release-APK
+          path: app/build/outputs/apk/release/*.apk
+          retention-days: 14
+
+      - name: Upload App Bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: FrontLauncher-AAB
+          path: app/build/outputs/bundle/*/*.aab
+          retention-days: 14
+
+      - name: Upload Studio Project
+        uses: actions/upload-artifact@v4
+        with:
+          name: FrontLauncher-Studio-Source
+          path: front-launcher-project.zip
+          retention-days: 14

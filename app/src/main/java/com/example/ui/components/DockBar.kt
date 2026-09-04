@@ -116,15 +116,17 @@ fun DockBar(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 for (app in dockApps) {
-                    AppIconComposable(
-                        app = app,
-                        iconShape = iconShape,
-                        iconSizeDp = (iconSizeDp * 0.95).toInt(),
-                        iconThemed = iconThemed,
-                        showLabel = false,
-                        onClick = { onAppClick(app) },
-                        onLongClick = { onAppLongClick(app) }
-                    )
+                    androidx.compose.runtime.key(app.packageName) {
+                        AppIconComposable(
+                            app = app,
+                            iconShape = iconShape,
+                            iconSizeDp = (iconSizeDp * 0.95).toInt(),
+                            iconThemed = iconThemed,
+                            showLabel = false,
+                            onClick = { onAppClick(app) },
+                            onLongClick = { onAppLongClick(app) }
+                        )
+                    }
                 }
             }
         }

@@ -188,9 +188,9 @@ fun HomeScreen(
                 }
             }
 
-            // Primary Home Apps Grid (Top Favorites / Frequently Used + Front Settings Shortcut)
+            // Primary Home Apps Grid (Top Favorites / Frequently Used + Front Settings Shortcut, excluding hidden apps)
             val homeApps = remember(uiState.apps, uiState.dockApps) {
-                val nonDockApps = uiState.apps.filter { !it.isPinnedToDock }
+                val nonDockApps = uiState.apps.filter { !it.isPinnedToDock && !it.isHidden }
                 val settingsShortcut = nonDockApps.firstOrNull { it.isLauncherSettingsShortcut }
                 val regularApps = nonDockApps.filter { !it.isLauncherSettingsShortcut }
                 if (settingsShortcut != null) {
@@ -218,15 +218,17 @@ fun HomeScreen(
                                 horizontalArrangement = Arrangement.SpaceAround
                             ) {
                                 for (app in row) {
-                                    AppIconComposable(
-                                        app = app,
-                                        iconShape = uiState.iconShape,
-                                        iconSizeDp = uiState.iconSizeDp,
-                                        iconThemed = uiState.iconThemed,
-                                        showLabel = uiState.showLabels,
-                                        onClick = { viewModel.launchApp(app) },
-                                        onLongClick = { viewModel.openAppMenu(app) }
-                                    )
+                                    androidx.compose.runtime.key(app.packageName) {
+                                        AppIconComposable(
+                                            app = app,
+                                            iconShape = uiState.iconShape,
+                                            iconSizeDp = uiState.iconSizeDp,
+                                            iconThemed = uiState.iconThemed,
+                                            showLabel = uiState.showLabels,
+                                            onClick = { com.example.util.AppLauncherHelper.launchAppSafely(activity as? androidx.fragment.app.FragmentActivity, app, viewModel) },
+                                            onLongClick = { viewModel.openAppMenu(app) }
+                                        )
+                                    }
                                 }
                                 for (i in row.size until 4) {
                                     Spacer(modifier = Modifier.fillMaxWidth(0.25f))

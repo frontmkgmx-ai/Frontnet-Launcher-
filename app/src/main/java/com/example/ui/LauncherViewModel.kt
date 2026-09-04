@@ -9,12 +9,14 @@ import com.example.data.LauncherConfigEntity
 import com.example.data.LauncherRepository
 import com.example.model.AiDailyBriefing
 import com.example.model.AppCategory
+import com.example.model.AppItem
 import com.example.model.GestureAction
 import com.example.model.IconShape
 import com.example.model.LauncherApp
 import com.example.model.LauncherThemeStyle
 import com.example.ui.theme.WallpaperTheme
 import com.example.ui.theme.WallpaperThemeEngine
+import com.example.util.DefaultAppsResolver
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -23,7 +25,9 @@ import kotlinx.coroutines.launch
 
 data class LauncherUiState(
     val apps: List<LauncherApp> = emptyList(),
+    val appItems: List<AppItem> = emptyList(),
     val dockApps: List<LauncherApp> = emptyList(),
+    val dockAppItems: List<AppItem> = emptyList(),
     val topUsedApps: List<LauncherApp> = emptyList(),
     val searchQuery: String = "",
     val isDrawerOpen: Boolean = false,
@@ -72,13 +76,41 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     fun refreshApps() {
         viewModelScope.launch {
             val allApps = repository.getInstalledOrPreloadedApps()
-            val dock = allApps.filter { it.isPinnedToDock }.take(5)
+            
+            // Resolve dock apps: if none pinned, detect default essential apps (Phone, Messages, Browser, Camera)
+            val dock = if (allApps.any { it.isPinnedToDock }) {
+                allApps.filter { it.isPinnedToDock }.take(5)
+            } else {
+                val resolvedDefaults = DefaultAppsResolver.resolveDefaultLauncherApps(getApplication(), allApps)
+                // Persist the default pinned apps in background
+                for (app in resolvedDefaults) {
+                    repository.togglePinToDock(app.packageName, false)
+                }
+                resolvedDefaults
+            }
+
             val topUsed = allApps.sortedByDescending { it.launchCount }.take(6)
+
+            // Convert pre-decoded icons to AppItem models
+            val appItems = allApps.mapNotNull { app ->
+                val iconBitmap = app.icon ?: com.example.util.AppIconCache.getCachedImageBitmap(app.packageName)
+                if (iconBitmap != null) {
+                    AppItem(label = app.label, packageName = app.packageName, icon = iconBitmap)
+                } else null
+            }
+            val dockItems = dock.mapNotNull { app ->
+                val iconBitmap = app.icon ?: com.example.util.AppIconCache.getCachedImageBitmap(app.packageName)
+                if (iconBitmap != null) {
+                    AppItem(label = app.label, packageName = app.packageName, icon = iconBitmap)
+                } else null
+            }
 
             _uiState.update { current ->
                 current.copy(
                     apps = allApps,
+                    appItems = appItems,
                     dockApps = dock,
+                    dockAppItems = dockItems,
                     topUsedApps = topUsed
                 )
             }

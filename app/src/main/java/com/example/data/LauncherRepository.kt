@@ -3,6 +3,11 @@ package com.example.data
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.ColorDrawable
+import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.provider.MediaStore
 import android.provider.Settings
@@ -30,11 +35,16 @@ import androidx.compose.material.icons.rounded.SportsEsports
 import androidx.compose.material.icons.rounded.Tune
 import androidx.compose.material.icons.rounded.VideoLibrary
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.core.graphics.drawable.toBitmap
 import com.example.model.AppCategory
+import com.example.model.AppItem
 import com.example.model.LauncherApp
 import com.example.model.LauncherThemeStyle
+import com.example.util.AppIconCache
 import com.example.util.CategoryClassifier
+import com.example.util.DefaultAppsResolver
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.firstOrNull
@@ -49,6 +59,36 @@ class LauncherRepository(
     val configFlow: Flow<LauncherConfigEntity?> = dao.getLauncherConfig()
     val appUsageFlow: Flow<List<AppUsageEntity>> = dao.getAllAppUsages()
 
+    /**
+     * Converts a Drawable into a ready-to-render ImageBitmap strictly on background threads.
+     */
+    private fun decodeDrawableToImageBitmap(drawable: Drawable?): ImageBitmap? {
+        if (drawable == null) return null
+        return try {
+            val bitmap = when (drawable) {
+                is BitmapDrawable -> drawable.bitmap
+                is ColorDrawable -> {
+                    val bmp = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
+                    val canvas = Canvas(bmp)
+                    drawable.draw(canvas)
+                    bmp
+                }
+                else -> {
+                    val width = if (drawable.intrinsicWidth > 0) drawable.intrinsicWidth.coerceAtMost(192) else 96
+                    val height = if (drawable.intrinsicHeight > 0) drawable.intrinsicHeight.coerceAtMost(192) else 96
+                    drawable.toBitmap(width, height, Bitmap.Config.ARGB_8888)
+                }
+            }
+            bitmap?.asImageBitmap()
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    /**
+     * Pre-loads all apps and decodes all drawables into ImageBitmaps strictly on Dispatchers.IO.
+     * Guaranteed zero UI thread stalling during scrolling.
+     */
     suspend fun getInstalledOrPreloadedApps(): List<LauncherApp> = withContext(Dispatchers.IO) {
         val pm = context.packageManager
         val mainIntent = Intent(Intent.ACTION_MAIN, null).apply {
@@ -66,14 +106,14 @@ class LauncherRepository(
         val currentPackageName = context.packageName
 
         val defaultDockPackages = if (existingUsageMap.none { it.value.isPinnedToDock }) {
-            com.example.util.DefaultAppsResolver.getDefaultAppsPackages(context)
+            DefaultAppsResolver.getDefaultAppsPackages(context)
         } else {
             emptyList()
         }
 
         for (resolveInfo in resolvedList) {
             val pkg = resolveInfo.activityInfo.packageName
-            // Exclude self launcher from drawer if desired or keep with special label
+            // Exclude self launcher from drawer if desired
             if (pkg == currentPackageName) continue
 
             val appInfo = try {
@@ -94,10 +134,22 @@ class LauncherRepository(
             }
 
             val autoCategory = CategoryClassifier.classify(pkg, label, appInfo)
-            val iconDrawable = try {
-                resolveInfo.loadIcon(pm)
-            } catch (e: Exception) {
-                null
+
+            // Extract Drawable and convert to ImageBitmap strictly on background thread
+            val cachedImage = AppIconCache.getCachedImageBitmap(pkg)
+            val decodedImage = if (cachedImage != null) {
+                cachedImage
+            } else {
+                val iconDrawable = try {
+                    resolveInfo.loadIcon(pm)
+                } catch (e: Exception) {
+                    null
+                }
+                val img = decodeDrawableToImageBitmap(iconDrawable)
+                if (img != null) {
+                    AppIconCache.putCachedImageBitmap(pkg, img)
+                }
+                img
             }
 
             val usage = existingUsageMap[pkg]
@@ -115,14 +167,15 @@ class LauncherRepository(
                     activityName = resolveInfo.activityInfo.name,
                     label = label,
                     category = effectiveCategory,
-                    iconDrawable = iconDrawable,
+                    icon = decodedImage,
+                    iconDrawable = null,
                     iconBitmap = null,
                     launchCount = usage?.launchCount ?: 0,
                     lastLaunchedTimestamp = usage?.lastLaunchedTimestamp ?: 0L,
                     isPinnedToDock = isPinned,
                     isFavorite = usage?.isFavorite ?: false,
-                isHidden = usage?.isHidden ?: false,
-                isLocked = usage?.isLocked ?: false,
+                    isHidden = usage?.isHidden ?: false,
+                    isLocked = usage?.isLocked ?: false,
                     isSystemDefault = false
                 )
             )
@@ -262,6 +315,7 @@ class LauncherRepository(
                 activityName = "",
                 label = item.label,
                 category = usage?.let { AppCategory.fromName(it.categoryName) } ?: item.category,
+                icon = null,
                 iconDrawable = null,
                 iconVector = item.icon,
                 iconTint = item.tint,
