@@ -145,7 +145,7 @@ private fun MaterialYouHeader(
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
-                        text = "Front Launcher • IA Ativa",
+                        text = "Front Launcher",
                         fontSize = 12.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = MaterialTheme.colorScheme.onPrimaryContainer
@@ -433,7 +433,7 @@ private fun HyperOsHeader(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "HyperOS Island • IA Ativa",
+                        text = "HyperOS Island",
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.White,

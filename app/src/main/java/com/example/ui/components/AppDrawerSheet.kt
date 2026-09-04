@@ -74,6 +74,7 @@ fun AppDrawerSheet(
     apps: List<LauncherApp>,
     searchQuery: String,
     drawerStyle: AppDrawerStyle,
+    drawerCategorized: Boolean,
     selectedCategoryFilter: AppCategory?,
     iconShape: IconShape,
     iconSizeDp: Int,
@@ -208,7 +209,7 @@ fun AppDrawerSheet(
             }
 
             // Category filter chips if in categorized mode
-            if (drawerStyle == AppDrawerStyle.CATEGORY_TABS) {
+            if (drawerStyle == AppDrawerStyle.CATEGORY_TABS && drawerCategorized) {
                 LazyRow(
                     contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -258,7 +259,8 @@ fun AppDrawerSheet(
             Spacer(modifier = Modifier.height(6.dp))
 
             // Main Content: based on drawerStyle
-            when (drawerStyle) {
+            val effectiveStyle = if (drawerStyle == AppDrawerStyle.CATEGORY_TABS && !drawerCategorized) AppDrawerStyle.VERTICAL_GRID else drawerStyle
+            when (effectiveStyle) {
                 AppDrawerStyle.CATEGORY_TABS -> {
                     val activeCategories = if (selectedCategoryFilter != null) {
                         listOf(selectedCategoryFilter)

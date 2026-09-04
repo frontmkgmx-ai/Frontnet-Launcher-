@@ -1,5 +1,6 @@
 package com.example.ui.components
 
+import androidx.compose.material.icons.rounded.Apps
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -79,6 +80,10 @@ fun CustomizeLauncherSheet(
     themeStyle: LauncherThemeStyle,
     homeScreenStyle: HomeScreenStyle = HomeScreenStyle.CLASSIC_GRID,
     appDrawerStyle: AppDrawerStyle = AppDrawerStyle.CATEGORY_TABS,
+    drawerCategorized: Boolean = true,
+    addNewAppsToHome: Boolean = true,
+    onAddNewAppsToHomeChange: ((Boolean) -> Unit)? = null,
+    onDrawerCategorizedChange: ((Boolean) -> Unit)? = null,
     iconShape: IconShape,
     iconThemed: Boolean,
     iconSizeDp: Int,
@@ -487,7 +492,39 @@ fun CustomizeLauncherSheet(
                     }
                 }
 
-                // Section 4: Smart Navigation Gestures
+                // Section 3.5: App Drawer
+                item {
+                    SettingsCard(
+                        title = "Gaveta de Aplicativos",
+                        subtitle = "Configurar exibição e categorias",
+                        icon = Icons.Rounded.Apps
+                    ) {
+                        Column {
+                            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text("Categorias Automáticas (IA)", fontSize = 14.sp, color = Color.White)
+                                    Text("Agrupar apps em categorias", fontSize = 11.sp, color = Color.White.copy(alpha=0.6f))
+                                }
+                                Switch(
+                                    checked = drawerCategorized,
+                                    onCheckedChange = { onDrawerCategorizedChange?.invoke(it) },
+                                    colors = SwitchDefaults.colors(checkedThumbColor = MaterialTheme.colorScheme.primary)
+                                )
+                            }
+                            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(top = 12.dp)) {
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text("Novos Apps na Tela Inicial", fontSize = 14.sp, color = Color.White)
+                                    Text("Adicionar atalho de novos apps", fontSize = 11.sp, color = Color.White.copy(alpha=0.6f))
+                                }
+                                Switch(
+                                    checked = addNewAppsToHome,
+                                    onCheckedChange = { onAddNewAppsToHomeChange?.invoke(it) },
+                                    colors = SwitchDefaults.colors(checkedThumbColor = MaterialTheme.colorScheme.primary)
+                                )
+                            }
+                        }
+                    }
+                }
                 item {
                     SettingsCard(
                         title = "Gestos Inteligentes de Navegação",

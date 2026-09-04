@@ -5,6 +5,7 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 
+@androidx.room.TypeConverters(StringListConverter::class)
 @Database(
     entities = [AppUsageEntity::class, LauncherConfigEntity::class],
     version = 4,

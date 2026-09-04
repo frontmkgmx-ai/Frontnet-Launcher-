@@ -1,5 +1,7 @@
 package com.example.ui
 
+import androidx.compose.material.icons.rounded.Settings
+import androidx.compose.material.icons.Icons
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
@@ -32,6 +34,9 @@ data class LauncherUiState(
     val searchQuery: String = "",
     val isDrawerOpen: Boolean = false,
     val drawerCategorized: Boolean = true,
+    val addNewAppsToHome: Boolean = true,
+    val dockApps: List<String> = emptyList(),
+    val hasInitializedDock: Boolean = false,
     val selectedCategoryFilter: AppCategory? = null,
     val isCustomizeSheetOpen: Boolean = false,
     val isAiRoutineModalOpen: Boolean = false,
@@ -75,7 +80,15 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
 
     fun refreshApps() {
         viewModelScope.launch {
-            val allApps = repository.getInstalledOrPreloadedApps()
+            val settingsApp = LauncherApp(
+                packageName = "com.front.launcher.settings",
+                label = "Configurações do Launcher",
+                category = com.example.model.AppCategory.TOOLS,
+                isLauncherSettingsShortcut = true,
+                iconVector = Icons.Rounded.Settings,
+                iconTint = androidx.compose.ui.graphics.Color(0xFF64748B)
+            )
+            val allApps = repository.getInstalledOrPreloadedApps() + settingsApp
             
             // Resolve dock apps: if none pinned, detect default essential apps (Phone, Messages, Browser, Camera)
             val dock = if (allApps.any { it.isPinnedToDock }) {
@@ -178,6 +191,9 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
                         showLabels = cfg.showLabels,
                         currentWallpaper = wallpaper,
                         drawerCategorized = cfg.drawerCategorized,
+                        addNewAppsToHome = cfg.addNewAppsToHome,
+                        dockApps = cfg.dockApps,
+                        hasInitializedDock = cfg.hasInitializedDock,
                         gestureSwipeDown = swipeDownAct,
                         gestureDoubleTap = doubleTapAct,
                         isFirstRunCompleted = cfg.isFirstRunCompleted,
@@ -453,6 +469,9 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
                     showLabels = state.showLabels,
                     wallpaperId = state.currentWallpaper.id,
                     drawerCategorized = state.drawerCategorized,
+                    addNewAppsToHome = state.addNewAppsToHome,
+                    dockApps = state.dockApps,
+                    hasInitializedDock = state.hasInitializedDock,
                     gestureSwipeDownAction = state.gestureSwipeDown.name,
                     gestureDoubleTapAction = state.gestureDoubleTap.name,
                     isFirstRunCompleted = state.isFirstRunCompleted,
@@ -461,5 +480,11 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
             )
         }
     }
+    fun toggleAddNewAppsToHome() {
+        val newMode = !_uiState.value.addNewAppsToHome
+        _uiState.update { it.copy(addNewAppsToHome = newMode) }
+        persistConfig()
+    }
 }
+
 
