@@ -117,13 +117,19 @@ fun HomeScreen(
             .testTag("home_screen_canvas")
     ) {
         // Main Home Screen Layout
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .statusBarsPadding()
+        androidx.compose.animation.AnimatedVisibility(
+            visible = !uiState.isDrawerOpen && !uiState.isCustomizeSheetOpen,
+            enter = androidx.compose.animation.fadeIn(),
+            exit = androidx.compose.animation.fadeOut(),
+            modifier = Modifier.fillMaxSize()
         ) {
-            // Adaptive Header (Material You / One UI / HyperOS)
-            HomeScreenHeader(
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .statusBarsPadding()
+            ) {
+                // Adaptive Header (Material You / One UI / HyperOS)
+                HomeScreenHeader(
                 themeStyle = uiState.themeStyle,
                 onSearchClick = { viewModel.openSearchSheet(true) },
                 onAiRoutineClick = { viewModel.openAiRoutineModal(true) },
@@ -259,6 +265,7 @@ fun HomeScreen(
                 onOpenDrawer = { viewModel.setDrawerOpen(true) }
             )
         }
+        } // Close AnimatedVisibility
 
         // Animated Overlays:
         // 1. App Drawer Sheet (Auto-Categorization mode & A-Z mode)
@@ -317,6 +324,7 @@ fun HomeScreen(
                 onGestureDoubleTapChange = { viewModel.setGestureDoubleTap(it) },
                 onHighRefreshRateChange = { viewModel.setHighRefreshRateEnabled(it) },
                 onOpenWelcomeOnboarding = { viewModel.setWelcomeOnboardingOpen(true) },
+                onSetDefaultLauncherClick = { activity?.requestDefaultLauncher() },
                 onAddWidgetClick = {
                     activity?.launchWidgetPicker()
                     viewModel.openCustomizeSheet(false)

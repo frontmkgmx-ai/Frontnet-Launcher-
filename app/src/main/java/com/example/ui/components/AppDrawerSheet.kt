@@ -111,7 +111,7 @@ fun AppDrawerSheet(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(Color.Black.copy(alpha = 0.88f))
+            .background(MaterialTheme.colorScheme.surface)
             .statusBarsPadding()
             .navigationBarsPadding()
             .testTag("app_drawer_container")
@@ -300,8 +300,59 @@ fun AppDrawerSheet(
                         }
                     }
                 }
-                AppDrawerStyle.VERTICAL_GRID, AppDrawerStyle.ALPHABETICAL_LIST, AppDrawerStyle.HORIZONTAL_PAGED -> {
-                    // For now, these 3 will use a highly optimized standard grid.
+                AppDrawerStyle.HORIZONTAL_PAGED -> {
+                    val appsPerPage = 25 // 5x5 grid
+                    val pages = filteredApps.chunked(appsPerPage)
+                    val pagerState = rememberPagerState(pageCount = { pages.size })
+                    
+                    Column(modifier = Modifier.fillMaxSize()) {
+                        HorizontalPager(
+                            state = pagerState,
+                            modifier = Modifier.weight(1f)
+                        ) { pageIndex ->
+                            val pageApps = pages[pageIndex]
+                            LazyVerticalGrid(
+                                columns = GridCells.Fixed(5),
+                                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
+                                horizontalArrangement = Arrangement.SpaceEvenly,
+                                verticalArrangement = Arrangement.spacedBy(16.dp),
+                                modifier = Modifier.fillMaxSize()
+                            ) {
+                                items(pageApps, key = { it.packageName }) { app ->
+                                    AppIconComposable(
+                                        app = app,
+                                        iconShape = iconShape,
+                                        iconSizeDp = (iconSizeDp * 0.9f).toInt(),
+                                        iconThemed = iconThemed,
+                                        showLabel = showLabels,
+                                        onClick = { onAppClick(app) },
+                                        onLongClick = { onAppLongClick(app) }
+                                    )
+                                }
+                            }
+                        }
+                        
+                        // Page indicators
+                        if (pages.size > 1) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                repeat(pages.size) { iteration ->
+                                    val color = if (pagerState.currentPage == iteration) MaterialTheme.colorScheme.primary else Color.Gray.copy(alpha = 0.5f)
+                                    Box(
+                                        modifier = Modifier
+                                            .padding(2.dp)
+                                            .clip(CircleShape)
+                                            .background(color)
+                                            .size(8.dp)
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+                AppDrawerStyle.VERTICAL_GRID -> {
                     LazyVerticalGrid(
                         columns = GridCells.Fixed(5),
                         contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
@@ -322,9 +373,44 @@ fun AppDrawerSheet(
                         }
                     }
                 }
-            }
+                AppDrawerStyle.ALPHABETICAL_LIST -> {
+                    val sortedApps = filteredApps.sortedBy { it.label.lowercase() }
+                    androidx.compose.foundation.lazy.LazyColumn(
+                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        items(sortedApps, key = { it.packageName }) { app ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable { onAppClick(app) }
+                                    .padding(vertical = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                AppIconComposable(
+                                    app = app,
+                                    iconShape = iconShape,
+                                    iconSizeDp = (iconSizeDp * 0.7f).toInt(),
+                                    iconThemed = iconThemed,
+                                    showLabel = false,
+                                    onClick = { onAppClick(app) },
+                                    onLongClick = { onAppLongClick(app) }
+                                )
+                                Spacer(modifier = Modifier.width(16.dp))
+                                Text(
+                                    text = app.label,
+                                    fontSize = 16.sp,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    fontWeight = FontWeight.Medium
+                                )
+                            }
+                        }
+                    }
+                }
         }
     }
+}
 }
 
 @Composable

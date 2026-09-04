@@ -96,6 +96,7 @@ fun CustomizeLauncherSheet(
     onGestureDoubleTapChange: (GestureAction) -> Unit,
     onHighRefreshRateChange: (Boolean) -> Unit,
     onOpenWelcomeOnboarding: () -> Unit,
+    onSetDefaultLauncherClick: () -> Unit = {},
     onAddWidgetClick: () -> Unit = {},
     onClose: () -> Unit,
     modifier: Modifier = Modifier
@@ -630,6 +631,20 @@ fun CustomizeLauncherSheet(
                                 color = Color.White.copy(alpha = 0.7f),
                                 lineHeight = 16.sp
                             )
+
+                            Button(
+                                onClick = onSetDefaultLauncherClick,
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Rounded.Check,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text("Definir como Launcher Padrão", fontWeight = FontWeight.Bold)
+                            }
 
                             OutlinedButton(
                                 onClick = onOpenWelcomeOnboarding,

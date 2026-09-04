@@ -30,6 +30,7 @@ import androidx.compose.material.icons.rounded.SportsEsports
 import androidx.compose.material.icons.rounded.Tune
 import androidx.compose.material.icons.rounded.VideoLibrary
 import androidx.compose.ui.graphics.Color
+import androidx.core.graphics.drawable.toBitmap
 import com.example.model.AppCategory
 import com.example.model.LauncherApp
 import com.example.model.LauncherThemeStyle
@@ -69,16 +70,21 @@ class LauncherRepository(
             // Exclude self launcher from drawer if desired or keep with special label
             if (pkg == currentPackageName) continue
 
-            val label = try {
-                resolveInfo.loadLabel(pm).toString()
-            } catch (e: Exception) {
-                resolveInfo.activityInfo.name
-            }
-
             val appInfo = try {
                 pm.getApplicationInfo(pkg, 0)
             } catch (e: Exception) {
                 null
+            }
+
+            val label = try {
+                if (appInfo != null) pm.getApplicationLabel(appInfo).toString()
+                else resolveInfo.loadLabel(pm).toString()
+            } catch (e: Exception) {
+                try {
+                    resolveInfo.loadLabel(pm).toString()
+                } catch (e2: Exception) {
+                    pkg
+                }
             }
 
             val autoCategory = CategoryClassifier.classify(pkg, label, appInfo)
@@ -102,6 +108,7 @@ class LauncherRepository(
                     label = label,
                     category = effectiveCategory,
                     iconDrawable = iconDrawable,
+                    iconBitmap = null,
                     launchCount = usage?.launchCount ?: 0,
                     lastLaunchedTimestamp = usage?.lastLaunchedTimestamp ?: 0L,
                     isPinnedToDock = usage?.isPinnedToDock ?: false,

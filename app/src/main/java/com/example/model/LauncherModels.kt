@@ -76,6 +76,7 @@ data class LauncherApp(
     val label: String,
     val category: AppCategory = AppCategory.OTHER,
     val iconDrawable: Drawable? = null,
+    val iconBitmap: android.graphics.Bitmap? = null,
     val iconVector: ImageVector? = null,
     val iconTint: Color? = null,
     val launchCount: Int = 0,

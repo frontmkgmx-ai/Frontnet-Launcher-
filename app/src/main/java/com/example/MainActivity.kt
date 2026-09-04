@@ -20,6 +20,7 @@ import com.example.ui.theme.MyApplicationTheme
 import android.app.Activity
 import android.appwidget.AppWidgetManager
 import android.content.Intent
+import android.provider.Settings
 import androidx.activity.result.contract.ActivityResultContracts
 import com.example.widget.WidgetHostManager
 
@@ -59,6 +60,26 @@ class MainActivity : ComponentActivity() {
           viewModel.addWidget(appWidgetId)
       } else if (appWidgetId != -1) {
           widgetHostManager.deleteAppWidgetId(appWidgetId)
+      }
+  }
+
+  fun requestDefaultLauncher() {
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+          val roleManager = getSystemService(android.app.role.RoleManager::class.java)
+          if (roleManager?.isRoleAvailable(android.app.role.RoleManager.ROLE_HOME) == true &&
+              !roleManager.isRoleHeld(android.app.role.RoleManager.ROLE_HOME)
+          ) {
+              val intent = roleManager.createRequestRoleIntent(android.app.role.RoleManager.ROLE_HOME)
+              startActivityForResult(intent, 1001)
+          }
+      } else {
+          try {
+              val intent = Intent(Settings.ACTION_HOME_SETTINGS)
+              startActivity(intent)
+          } catch (e: Exception) {
+              val intent = Intent(Settings.ACTION_SETTINGS)
+              startActivity(intent)
+          }
       }
   }
 

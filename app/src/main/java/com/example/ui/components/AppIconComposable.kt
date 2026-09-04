@@ -40,6 +40,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.graphics.drawable.toBitmap
 import com.example.model.IconShape
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
+import com.example.util.AppIconCache
 import com.example.model.LauncherApp
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -55,6 +61,16 @@ fun AppIconComposable(
     onLongClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
+    var cachedBitmap by remember(app.packageName) { mutableStateOf<androidx.compose.ui.graphics.ImageBitmap?>(null) }
+    
+    LaunchedEffect(app.packageName) {
+        if (app.iconVector == null) {
+            val bmp = AppIconCache.getIcon(context.packageManager, app.packageName)
+            cachedBitmap = bmp?.asImageBitmap()
+        }
+    }
+
     val shape = remember(iconShape) {
         when (iconShape) {
             IconShape.CIRCLE -> CircleShape
@@ -88,7 +104,7 @@ fun AppIconComposable(
                 .then(
                     if (iconThemed) {
                         Modifier.background(MaterialTheme.colorScheme.primaryContainer)
-                    } else if (app.iconDrawable == null) {
+                    } else if (cachedBitmap == null && app.iconVector == null) {
                         Modifier.background(app.iconTint?.copy(alpha = 0.9f) ?: MaterialTheme.colorScheme.surfaceVariant)
                     } else {
                         Modifier
@@ -104,25 +120,13 @@ fun AppIconComposable(
                         tint = MaterialTheme.colorScheme.onPrimaryContainer,
                         modifier = Modifier.size((iconSizeDp * 0.55).dp)
                     )
-                } else if (app.iconDrawable != null) {
-                    val bitmap = remember(app.iconDrawable) {
-                        drawableToImageBitmap(app.iconDrawable)
-                    }
-                    if (bitmap != null) {
-                        Image(
-                            bitmap = bitmap,
-                            contentDescription = app.label,
-                            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onPrimaryContainer),
-                            modifier = Modifier.size((iconSizeDp * 0.58).dp)
-                        )
-                    } else {
-                        Icon(
-                            imageVector = Icons.Rounded.Android,
-                            contentDescription = app.label,
-                            tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                            modifier = Modifier.size((iconSizeDp * 0.55).dp)
-                        )
-                    }
+                } else if (cachedBitmap != null) {
+                    Image(
+                        bitmap = cachedBitmap!!,
+                        contentDescription = app.label,
+                        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onPrimaryContainer),
+                        modifier = Modifier.size((iconSizeDp * 0.58).dp)
+                    )
                 } else {
                     Icon(
                         imageVector = Icons.Rounded.Android,
@@ -133,24 +137,12 @@ fun AppIconComposable(
                 }
             } else {
                 // Vibrant Original Icon
-                if (app.iconDrawable != null) {
-                    val bitmap = remember(app.iconDrawable) {
-                        drawableToImageBitmap(app.iconDrawable)
-                    }
-                    if (bitmap != null) {
-                        Image(
-                            bitmap = bitmap,
-                            contentDescription = app.label,
-                            modifier = Modifier.size(iconSizeDp.dp).clip(shape)
-                        )
-                    } else {
-                        Icon(
-                            imageVector = app.iconVector ?: Icons.Rounded.Android,
-                            contentDescription = app.label,
-                            tint = Color.White,
-                            modifier = Modifier.size((iconSizeDp * 0.55).dp)
-                        )
-                    }
+                if (cachedBitmap != null) {
+                    Image(
+                        bitmap = cachedBitmap!!,
+                        contentDescription = app.label,
+                        modifier = Modifier.size(iconSizeDp.dp).clip(shape)
+                    )
                 } else if (app.iconVector != null) {
                     Icon(
                         imageVector = app.iconVector,
