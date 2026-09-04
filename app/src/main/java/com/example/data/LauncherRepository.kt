@@ -8,12 +8,12 @@ import android.provider.MediaStore
 import android.provider.Settings
 import android.util.Log
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.Chat
 import androidx.compose.material.icons.rounded.AccountBalance
 import androidx.compose.material.icons.rounded.Build
 import androidx.compose.material.icons.rounded.Calculate
 import androidx.compose.material.icons.rounded.CalendarMonth
 import androidx.compose.material.icons.rounded.CameraAlt
-import androidx.compose.material.icons.rounded.Chat
 import androidx.compose.material.icons.rounded.Email
 import androidx.compose.material.icons.rounded.Explore
 import androidx.compose.material.icons.rounded.Folder
@@ -27,6 +27,7 @@ import androidx.compose.material.icons.rounded.Schedule
 import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material.icons.rounded.ShoppingBag
 import androidx.compose.material.icons.rounded.SportsEsports
+import androidx.compose.material.icons.rounded.Tune
 import androidx.compose.material.icons.rounded.VideoLibrary
 import androidx.compose.ui.graphics.Color
 import com.example.model.AppCategory
@@ -194,27 +195,38 @@ class LauncherRepository(
         dao.saveLauncherConfig(config)
     }
 
+    suspend fun setFirstRunCompleted(completed: Boolean = true) = withContext(Dispatchers.IO) {
+        val current = dao.getLauncherConfig().firstOrNull() ?: LauncherConfigEntity()
+        dao.saveLauncherConfig(current.copy(isFirstRunCompleted = completed))
+    }
+
+    suspend fun setHighRefreshRateEnabled(enabled: Boolean) = withContext(Dispatchers.IO) {
+        val current = dao.getLauncherConfig().firstOrNull() ?: LauncherConfigEntity()
+        dao.saveLauncherConfig(current.copy(highRefreshRateEnabled = enabled))
+    }
+
     private fun getSystemFallbackSuite(usageMap: Map<String, AppUsageEntity>): List<LauncherApp> {
         val list = listOf(
+            FallbackApp("com.front.launcher.settings", "Configurações do Front", AppCategory.TOOLS, Icons.Rounded.Tune, Color(0xFF00E5FF), false, isLauncherSettings = true),
             FallbackApp("com.android.dialer", "Telefone", AppCategory.COMMUNICATION, Icons.Rounded.Phone, Color(0xFF22C55E), true),
-            FallbackApp("com.google.android.apps.messaging", "Mensagens", AppCategory.COMMUNICATION, Icons.Rounded.Chat, Color(0xFF0EA5E9), true),
-            FallbackApp("com.android.chrome", "Navegador Chrome", AppCategory.TOOLS, Icons.Rounded.Language, Color(0xFFEAB308), true),
+            FallbackApp("com.google.android.apps.messaging", "Mensagens", AppCategory.COMMUNICATION, Icons.AutoMirrored.Rounded.Chat, Color(0xFF0EA5E9), true),
+            FallbackApp("com.android.chrome", "Navegador Web", AppCategory.TOOLS, Icons.Rounded.Language, Color(0xFFEAB308), true),
             FallbackApp("com.android.camera", "Câmera", AppCategory.TOOLS, Icons.Rounded.CameraAlt, Color(0xFFEF4444), true),
             FallbackApp("com.google.android.apps.photos", "Galeria & Fotos", AppCategory.MEDIA, Icons.Rounded.PhotoLibrary, Color(0xFFF97316), true),
-            FallbackApp("com.google.android.gm", "Gmail", AppCategory.PRODUCTIVITY, Icons.Rounded.Email, Color(0xFFEA4335), false),
-            FallbackApp("com.google.android.apps.maps", "Google Maps", AppCategory.TRAVEL, Icons.Rounded.Navigation, Color(0xFF34D399), false),
+            FallbackApp("com.google.android.gm", "E-mail", AppCategory.PRODUCTIVITY, Icons.Rounded.Email, Color(0xFFEA4335), false),
+            FallbackApp("com.google.android.apps.maps", "Mapas & Rotas", AppCategory.TRAVEL, Icons.Rounded.Navigation, Color(0xFF34D399), false),
             FallbackApp("com.spotify.music", "Spotify Música", AppCategory.MEDIA, Icons.Rounded.MusicNote, Color(0xFF1DB954), false),
-            FallbackApp("com.google.android.youtube", "YouTube", AppCategory.MEDIA, Icons.Rounded.PlayArrow, Color(0xFFFF0000), false),
-            FallbackApp("com.whatsapp", "WhatsApp", AppCategory.COMMUNICATION, Icons.Rounded.Chat, Color(0xFF25D366), false),
+            FallbackApp("com.google.android.youtube", "Vídeos & Streaming", AppCategory.MEDIA, Icons.Rounded.PlayArrow, Color(0xFFFF0000), false),
+            FallbackApp("com.whatsapp", "WhatsApp", AppCategory.COMMUNICATION, Icons.AutoMirrored.Rounded.Chat, Color(0xFF25D366), false),
             FallbackApp("com.instagram.android", "Instagram", AppCategory.COMMUNICATION, Icons.Rounded.PhotoLibrary, Color(0xFFE1306C), false),
             FallbackApp("com.google.android.calendar", "Calendário", AppCategory.PRODUCTIVITY, Icons.Rounded.CalendarMonth, Color(0xFF4285F4), false),
             FallbackApp("com.google.android.calculator", "Calculadora", AppCategory.TOOLS, Icons.Rounded.Calculate, Color(0xFF64748B), false),
             FallbackApp("com.google.android.deskclock", "Relógio & Alarme", AppCategory.TOOLS, Icons.Rounded.Schedule, Color(0xFF3B82F6), false),
-            FallbackApp("com.google.android.apps.docs", "Drive & Docs", AppCategory.PRODUCTIVITY, Icons.Rounded.Folder, Color(0xFF10B981), false),
+            FallbackApp("com.google.android.apps.docs", "Arquivos & Docs", AppCategory.PRODUCTIVITY, Icons.Rounded.Folder, Color(0xFF10B981), false),
             FallbackApp("com.nu.production", "Nubank", AppCategory.FINANCE, Icons.Rounded.AccountBalance, Color(0xFF820AD1), false),
             FallbackApp("com.mercadolivre", "Mercado Livre", AppCategory.FINANCE, Icons.Rounded.ShoppingBag, Color(0xFFFFE600), false),
-            FallbackApp("com.android.settings", "Configurações", AppCategory.TOOLS, Icons.Rounded.Settings, Color(0xFF6B7280), false),
-            FallbackApp("com.google.android.play.games", "Play Games", AppCategory.GAMES, Icons.Rounded.SportsEsports, Color(0xFF10B981), false)
+            FallbackApp("com.android.settings", "Configurações do Sistema", AppCategory.TOOLS, Icons.Rounded.Settings, Color(0xFF6B7280), false),
+            FallbackApp("com.google.android.play.games", "Jogos", AppCategory.GAMES, Icons.Rounded.SportsEsports, Color(0xFF10B981), false)
         )
 
         return list.map { item ->
@@ -231,7 +243,8 @@ class LauncherRepository(
                 lastLaunchedTimestamp = usage?.lastLaunchedTimestamp ?: 0L,
                 isPinnedToDock = usage?.isPinnedToDock ?: item.defaultDock,
                 isFavorite = usage?.isFavorite ?: false,
-                isSystemDefault = true
+                isSystemDefault = true,
+                isLauncherSettingsShortcut = item.isLauncherSettings
             )
         }
     }
@@ -242,6 +255,7 @@ class LauncherRepository(
         val category: AppCategory,
         val icon: androidx.compose.ui.graphics.vector.ImageVector,
         val tint: Color,
-        val defaultDock: Boolean
+        val defaultDock: Boolean,
+        val isLauncherSettings: Boolean = false
     )
 }

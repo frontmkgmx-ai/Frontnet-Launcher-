@@ -28,5 +28,7 @@ data class LauncherConfigEntity(
     val wallpaperId: String = "monet_aurora",
     val drawerCategorized: Boolean = true,
     val gestureSwipeDownAction: String = "SEARCH", // SEARCH, NOTIFICATIONS, AI_ASSISTANT
-    val gestureDoubleTapAction: String = "AI_ROUTINE" // AI_ROUTINE, LOCK, APP_DRAWER
+    val gestureDoubleTapAction: String = "AI_ROUTINE", // AI_ROUTINE, LOCK, APP_DRAWER
+    val isFirstRunCompleted: Boolean = false,
+    val highRefreshRateEnabled: Boolean = true
 )

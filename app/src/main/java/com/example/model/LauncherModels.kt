@@ -2,10 +2,10 @@ package com.example.model
 
 import android.graphics.drawable.Drawable
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.Chat
 import androidx.compose.material.icons.rounded.AccountBalance
 import androidx.compose.material.icons.rounded.Apps
 import androidx.compose.material.icons.rounded.Build
-import androidx.compose.material.icons.rounded.Chat
 import androidx.compose.material.icons.rounded.Explore
 import androidx.compose.material.icons.rounded.PlayCircle
 import androidx.compose.material.icons.rounded.SportsEsports
@@ -19,7 +19,7 @@ enum class AppCategory(
     val icon: ImageVector,
     val accentColor: Color
 ) {
-    COMMUNICATION("Comunicação & Social", "Mensagens, redes e contatos", Icons.Rounded.Chat, Color(0xFF38BDF8)),
+    COMMUNICATION("Comunicação & Social", "Mensagens, redes e contatos", Icons.AutoMirrored.Rounded.Chat, Color(0xFF38BDF8)),
     PRODUCTIVITY("Produtividade", "Trabalho, estudos e organização", Icons.Rounded.Work, Color(0xFF818CF8)),
     TOOLS("Ferramentas & Sistema", "Utilitários, configurações e sistema", Icons.Rounded.Build, Color(0xFFFBBF24)),
     MEDIA("Mídia & Streaming", "Músicas, vídeos e fotos", Icons.Rounded.PlayCircle, Color(0xFFF43F5E)),
@@ -53,7 +53,7 @@ enum class GestureAction(val displayName: String) {
     SEARCH("Busca Rápida e IA"),
     AI_ROUTINE("Resumo e Atalhos da IA"),
     CUSTOMIZE("Personalizar Launcher e Papel de Parede"),
-    SETTINGS("Configurações do Launcher"),
+    SETTINGS("Configurações do Front Launcher"),
     NOTIFICATIONS("Expandir Barra de Status")
 }
 
@@ -69,7 +69,8 @@ data class LauncherApp(
     val lastLaunchedTimestamp: Long = 0L,
     val isPinnedToDock: Boolean = false,
     val isFavorite: Boolean = false,
-    val isSystemDefault: Boolean = false
+    val isSystemDefault: Boolean = false,
+    val isLauncherSettingsShortcut: Boolean = false
 )
 
 data class AiShortcutSuggestion(
@@ -88,5 +89,5 @@ data class AiDailyBriefing(
     val recommendedApps: List<AiShortcutSuggestion>,
     val quickActionTitle: String,
     val quickActionPrompt: String,
-    val isLiveGeminiResponse: Boolean = false
+    val isLiveAiResponse: Boolean = false
 )

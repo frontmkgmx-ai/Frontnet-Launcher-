@@ -50,6 +50,7 @@ import com.example.ui.components.CustomizeLauncherSheet
 import com.example.ui.components.DockBar
 import com.example.ui.components.HomeScreenHeader
 import com.example.ui.components.SearchSheet
+import com.example.ui.components.WelcomeOnboardingScreen
 
 @Composable
 fun HomeScreen(
@@ -141,10 +142,16 @@ fun HomeScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Primary Home Apps Grid (Top Favorites / Frequently Used)
+            // Primary Home Apps Grid (Top Favorites / Frequently Used + Front Settings Shortcut)
             val homeApps = remember(uiState.apps, uiState.dockApps) {
                 val nonDockApps = uiState.apps.filter { !it.isPinnedToDock }
-                nonDockApps.take(8)
+                val settingsShortcut = nonDockApps.firstOrNull { it.isLauncherSettingsShortcut }
+                val regularApps = nonDockApps.filter { !it.isLauncherSettingsShortcut }
+                if (settingsShortcut != null) {
+                    listOf(settingsShortcut) + regularApps.take(7)
+                } else {
+                    nonDockApps.take(8)
+                }
             }
 
             Column(
@@ -237,6 +244,7 @@ fun HomeScreen(
                 currentWallpaper = uiState.currentWallpaper,
                 gestureSwipeDown = uiState.gestureSwipeDown,
                 gestureDoubleTap = uiState.gestureDoubleTap,
+                highRefreshRateEnabled = uiState.highRefreshRateEnabled,
                 onThemeStyleChange = { viewModel.setLauncherThemeStyle(it) },
                 onIconShapeChange = { viewModel.setIconShape(it) },
                 onIconThemedChange = { viewModel.setIconThemed(it) },
@@ -245,6 +253,8 @@ fun HomeScreen(
                 onWallpaperChange = { viewModel.setWallpaper(it) },
                 onGestureSwipeDownChange = { viewModel.setGestureSwipeDown(it) },
                 onGestureDoubleTapChange = { viewModel.setGestureDoubleTap(it) },
+                onHighRefreshRateChange = { viewModel.setHighRefreshRateEnabled(it) },
+                onOpenWelcomeOnboarding = { viewModel.setWelcomeOnboardingOpen(true) },
                 onClose = { viewModel.openCustomizeSheet(false) }
             )
         }
@@ -307,6 +317,14 @@ fun HomeScreen(
                     viewModel.changeAppCategory(app, newCat)
                 }
             }
+        )
+
+        // 7. Welcome Onboarding Dialog / First Run Setup
+        WelcomeOnboardingScreen(
+            isOpen = uiState.isWelcomeOnboardingOpen,
+            currentThemeStyle = uiState.themeStyle,
+            onSelectThemeStyle = { viewModel.setLauncherThemeStyle(it) },
+            onComplete = { viewModel.completeFirstRun() }
         )
 
         // Snackbar host

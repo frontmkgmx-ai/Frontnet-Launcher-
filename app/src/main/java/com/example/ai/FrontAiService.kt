@@ -17,9 +17,9 @@ import org.json.JSONObject
 import java.util.Calendar
 import java.util.concurrent.TimeUnit
 
-object GeminiLauncherService {
+object FrontAiService {
 
-    private const val TAG = "GeminiLauncher"
+    private const val TAG = "FrontAiService"
     private const val MODEL = "gemini-3.5-flash"
     private const val API_URL = "https://generativelanguage.googleapis.com/v1beta/models/$MODEL:generateContent"
 
@@ -53,7 +53,7 @@ object GeminiLauncherService {
             else -> "Madrugada (Descanso e silêncio)"
         }
 
-        // Try calling Gemini API if key is present
+        // Try calling the AI cloud endpoint if key is present
         val apiKey = try {
             BuildConfig.GEMINI_API_KEY
         } catch (e: Throwable) {
@@ -64,7 +64,7 @@ object GeminiLauncherService {
             try {
                 val candidateAppNames = installedApps.take(20).joinToString(", ") { "${it.label} (${it.packageName})" }
                 val prompt = """
-                    Você é a Inteligência Artificial contextual de um Android Home Launcher.
+                    Você é a Inteligência Artificial contextual do Front Launcher.
                     Contexto atual do usuário:
                     - Dia: $dayOfWeek
                     - Horário: $hour:00 ($timePeriod)
@@ -109,16 +109,16 @@ object GeminiLauncherService {
                 if (response.isSuccessful) {
                     val responseStr = response.body?.string()
                     if (!responseStr.isNullOrBlank()) {
-                        val parsed = parseGeminiResponse(responseStr, installedApps, timePeriod)
+                        val parsed = parseAiResponse(responseStr, installedApps, timePeriod)
                         if (parsed != null) {
-                            return@withContext parsed.copy(isLiveGeminiResponse = true)
+                            return@withContext parsed.copy(isLiveAiResponse = true)
                         }
                     }
                 } else {
-                    Log.w(TAG, "Gemini API error code: ${response.code}")
+                    Log.w(TAG, "AI API error code: ${response.code}")
                 }
             } catch (e: Exception) {
-                Log.e(TAG, "Failed calling Gemini API, falling back to local AI engine", e)
+                Log.e(TAG, "Failed calling AI API, falling back to local engine", e)
             }
         }
 
@@ -126,7 +126,7 @@ object GeminiLauncherService {
         generateLocalSmartBriefing(hour, dayOfWeek, timePeriod, installedApps, topUsedApps)
     }
 
-    private fun parseGeminiResponse(
+    private fun parseAiResponse(
         responseBody: String,
         installedApps: List<LauncherApp>,
         timePeriod: String
@@ -170,7 +170,6 @@ object GeminiLauncherService {
                 }
             }
 
-            // Fill up to 4 if needed
             if (recommendedShortcuts.isEmpty()) {
                 return null
             }
@@ -182,10 +181,10 @@ object GeminiLauncherService {
                 recommendedApps = recommendedShortcuts.take(4),
                 quickActionTitle = quickActionTitle,
                 quickActionPrompt = quickActionPrompt,
-                isLiveGeminiResponse = true
+                isLiveAiResponse = true
             )
         } catch (e: Exception) {
-            Log.e(TAG, "Error parsing Gemini response", e)
+            Log.e(TAG, "Error parsing AI response", e)
             null
         }
     }
@@ -235,7 +234,6 @@ object GeminiLauncherService {
             )
         }
 
-        // Pick top apps prioritizing targetCategories and top usage
         val selectedApps = mutableListOf<AiShortcutSuggestion>()
 
         for (category in targetCategories) {
@@ -255,7 +253,6 @@ object GeminiLauncherService {
             }
         }
 
-        // Fill remaining from general installed apps
         for (app in installedApps) {
             if (selectedApps.size >= 4) break
             if (selectedApps.none { it.packageName == app.packageName }) {
@@ -279,7 +276,7 @@ object GeminiLauncherService {
             recommendedApps = selectedApps.take(4),
             quickActionTitle = quickAction,
             quickActionPrompt = actionPrompt,
-            isLiveGeminiResponse = false
+            isLiveAiResponse = false
         )
     }
 

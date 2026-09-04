@@ -5,32 +5,68 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <!-- Center 66dp safe zone is from x=21..87, y=21..87 -->
-    <!-- Top left app tile -->
-    <path
-        android:pathData="M33,35 A6,6 0 0,1 39,29 L47,29 A6,6 0 0,1 53,35 L53,43 A6,6 0 0,1 47,49 L39,49 A6,6 0 0,1 33,43 Z"
-        android:fillColor="#80D8FF" />
-    <!-- Top right app tile -->
-    <path
-        android:pathData="M57,35 A6,6 0 0,1 63,29 L71,29 A6,6 0 0,1 77,35 L77,43 A6,6 0 0,1 71,49 L63,49 A6,6 0 0,1 57,43 Z"
-        android:fillColor="#A78BFA" />
-    <!-- Bottom left app tile -->
-    <path
-        android:pathData="M33,59 A6,6 0 0,1 39,53 L47,53 A6,6 0 0,1 53,59 L53,67 A6,6 0 0,1 47,73 L39,73 A6,6 0 0,1 33,67 Z"
-        android:fillColor="#F472B6" />
-    <!-- Bottom right app tile with AI sparkle shape -->
-    <path
-        android:pathData="M57,59 A6,6 0 0,1 63,53 L71,53 A6,6 0 0,1 77,59 L77,67 A6,6 0 0,1 71,73 L63,73 A6,6 0 0,1 57,67 Z"
-        android:fillColor="#38BDF8" />
-    <!-- Center AI star symbol -->
-    <path
-        android:pathData="M54,47 C54,51 51,54 47,54 C51,54 54,57 54,61 C54,57 57,54 61,54 C57,54 54,51 54,47 Z"
-        android:fillColor="#FFFFFF" />
-    <!-- Dock base indicator bar -->
-    <path
-        android:pathData="M37,79 L71,79"
-        android:strokeWidth="3.5"
-        android:strokeColor="#FFFFFF"
-        android:strokeLineCap="round" />
-</vector>
 
+    <!-- Glowing soft backdrop disc -->
+    <path
+        android:pathData="M54,54m-26,0a26,26 0,1 1,52 0a26,26 0,1 1,-52 0"
+        android:fillColor="#2200E5FF" />
+
+    <!-- Front Launcher "F" + Home Arrow Crest -->
+    <!-- Vertical stem of F / Launch pillar -->
+    <path
+        android:pathData="M37,33 L45,33 A2,2 0 0,1 47,35 L47,73 A2,2 0 0,1 45,75 L37,75 A2,2 0 0,1 35,73 L35,35 A2,2 0 0,1 37,33 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:startX="35"
+                android:startY="33"
+                android:endX="47"
+                android:endY="75"
+                android:type="linear">
+                <item android:offset="0.0" android:color="#FFFFFF" />
+                <item android:offset="1.0" android:color="#E0F2FE" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Top wing of F / Arrow apex -->
+    <path
+        android:pathData="M45,33 L67,33 A4,4 0 0,1 71,37 L71,41 A4,4 0 0,1 67,45 L47,45 L45,33 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:startX="45"
+                android:startY="33"
+                android:endX="71"
+                android:endY="45"
+                android:type="linear">
+                <item android:offset="0.0" android:color="#38BDF8" />
+                <item android:offset="1.0" android:color="#00E5FF" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Mid wing of F / Fast Forward Bar -->
+    <path
+        android:pathData="M47,50 L61,50 A3,3 0 0,1 64,53 L64,56 A3,3 0 0,1 61,59 L47,59 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:startX="47"
+                android:startY="50"
+                android:endX="64"
+                android:endY="59"
+                android:type="linear">
+                <item android:offset="0.0" android:color="#A78BFA" />
+                <item android:offset="1.0" android:color="#C084FC" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Speed 120Hz sparkle notch -->
+    <path
+        android:pathData="M70,51 L72,55 L76,57 L72,59 L70,63 L68,59 L64,57 L68,55 Z"
+        android:fillColor="#38BDF8" />
+
+    <!-- Sleek Home chevron base indicator -->
+    <path
+        android:pathData="M49,67 L57,75 L53,75 L47,69 Z"
+        android:fillColor="#38BDF8" />
+</vector>

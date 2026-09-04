@@ -3,7 +3,7 @@ package com.example.ui
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.ai.GeminiLauncherService
+import com.example.ai.FrontAiService
 import com.example.data.AppDatabase
 import com.example.data.LauncherConfigEntity
 import com.example.data.LauncherRepository
@@ -16,11 +16,8 @@ import com.example.model.LauncherThemeStyle
 import com.example.ui.theme.WallpaperTheme
 import com.example.ui.theme.WallpaperThemeEngine
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -37,6 +34,9 @@ data class LauncherUiState(
     val isSearchSheetOpen: Boolean = false,
     val selectedAppForMenu: LauncherApp? = null,
     val isChangeCategoryDialogOpen: Boolean = false,
+    val isFirstRunCompleted: Boolean = true, // Defaults to true until config is loaded
+    val isWelcomeOnboardingOpen: Boolean = false,
+    val highRefreshRateEnabled: Boolean = true,
     val themeStyle: LauncherThemeStyle = LauncherThemeStyle.MATERIAL_YOU,
     val iconShape: IconShape = IconShape.SQUIRCLE,
     val iconThemed: Boolean = false,
@@ -118,7 +118,10 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
                         currentWallpaper = wallpaper,
                         drawerCategorized = cfg.drawerCategorized,
                         gestureSwipeDown = swipeDownAct,
-                        gestureDoubleTap = doubleTapAct
+                        gestureDoubleTap = doubleTapAct,
+                        isFirstRunCompleted = cfg.isFirstRunCompleted,
+                        isWelcomeOnboardingOpen = !cfg.isFirstRunCompleted,
+                        highRefreshRateEnabled = cfg.highRefreshRateEnabled
                     )
                 }
             }
@@ -130,7 +133,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     fun refreshAiSuggestions() {
         viewModelScope.launch {
             _uiState.update { it.copy(isAiLoading = true) }
-            val briefing = GeminiLauncherService.getDailyRoutineSuggestions(
+            val briefing = FrontAiService.getDailyRoutineSuggestions(
                 _uiState.value.apps,
                 _uiState.value.topUsedApps
             )
@@ -139,10 +142,15 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     }
 
     fun launchApp(app: LauncherApp) {
+        if (app.isLauncherSettingsShortcut || app.packageName == "com.front.launcher.settings") {
+            openCustomizeSheet(true)
+            _uiState.update { it.copy(isDrawerOpen = false, isSearchSheetOpen = false) }
+            return
+        }
+
         viewModelScope.launch {
             repository.launchApp(app.packageName)
             _uiState.update { it.copy(isDrawerOpen = false, isSearchSheetOpen = false) }
-            // Increment local state launch count
             _uiState.update { current ->
                 val updated = current.apps.map {
                     if (it.packageName == app.packageName) it.copy(launchCount = it.launchCount + 1) else it
@@ -152,6 +160,24 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
                     topUsedApps = updated.sortedByDescending { it.launchCount }.take(6)
                 )
             }
+        }
+    }
+
+    fun completeFirstRun() {
+        viewModelScope.launch {
+            repository.setFirstRunCompleted(true)
+            _uiState.update { it.copy(isFirstRunCompleted = true, isWelcomeOnboardingOpen = false) }
+        }
+    }
+
+    fun setWelcomeOnboardingOpen(open: Boolean) {
+        _uiState.update { it.copy(isWelcomeOnboardingOpen = open) }
+    }
+
+    fun setHighRefreshRateEnabled(enabled: Boolean) {
+        viewModelScope.launch {
+            repository.setHighRefreshRateEnabled(enabled)
+            _uiState.update { it.copy(highRefreshRateEnabled = enabled) }
         }
     }
 
@@ -309,9 +335,12 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
                     wallpaperId = state.currentWallpaper.id,
                     drawerCategorized = state.drawerCategorized,
                     gestureSwipeDownAction = state.gestureSwipeDown.name,
-                    gestureDoubleTapAction = state.gestureDoubleTap.name
+                    gestureDoubleTapAction = state.gestureDoubleTap.name,
+                    isFirstRunCompleted = state.isFirstRunCompleted,
+                    highRefreshRateEnabled = state.highRefreshRateEnabled
                 )
             )
         }
     }
 }
+

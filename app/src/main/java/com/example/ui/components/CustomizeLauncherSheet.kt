@@ -26,19 +26,24 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.OpenInNew
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.FormatPaint
 import androidx.compose.material.icons.rounded.Gesture
 import androidx.compose.material.icons.rounded.Palette
 import androidx.compose.material.icons.rounded.SmartButton
+import androidx.compose.material.icons.rounded.Speed
 import androidx.compose.material.icons.rounded.Tune
 import androidx.compose.material.icons.rounded.Wallpaper
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Surface
@@ -73,6 +78,7 @@ fun CustomizeLauncherSheet(
     currentWallpaper: WallpaperTheme,
     gestureSwipeDown: GestureAction,
     gestureDoubleTap: GestureAction,
+    highRefreshRateEnabled: Boolean,
     onThemeStyleChange: (LauncherThemeStyle) -> Unit,
     onIconShapeChange: (IconShape) -> Unit,
     onIconThemedChange: (Boolean) -> Unit,
@@ -81,6 +87,8 @@ fun CustomizeLauncherSheet(
     onWallpaperChange: (WallpaperTheme) -> Unit,
     onGestureSwipeDownChange: (GestureAction) -> Unit,
     onGestureDoubleTapChange: (GestureAction) -> Unit,
+    onHighRefreshRateChange: (Boolean) -> Unit,
+    onOpenWelcomeOnboarding: () -> Unit,
     onClose: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -540,6 +548,78 @@ fun CustomizeLauncherSheet(
                                         )
                                     }
                                 }
+                            }
+                        }
+                    }
+                }
+
+                // Section 6: Performance & Refresh Rate (Até 120 FPS)
+                item {
+                    SettingsCard(
+                        title = "Taxa de Atualização & Desempenho",
+                        subtitle = "Máxima fluidez até 120 FPS",
+                        icon = Icons.Rounded.Speed
+                    ) {
+                        Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = "Modo Ultra Fluido (120 Hz / 120 FPS)",
+                                        fontSize = 14.sp,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = Color.White
+                                    )
+                                    Text(
+                                        text = "Requisita o modo de exibição de taxa mais alta (90Hz / 120Hz) suportado pelo hardware do celular",
+                                        fontSize = 12.sp,
+                                        color = Color.White.copy(alpha = 0.65f),
+                                        lineHeight = 15.sp
+                                    )
+                                }
+                                Switch(
+                                    checked = highRefreshRateEnabled,
+                                    onCheckedChange = onHighRefreshRateChange,
+                                    colors = SwitchDefaults.colors(
+                                        checkedThumbColor = Color(0xFF00E5FF),
+                                        checkedTrackColor = Color(0xFF00E5FF).copy(alpha = 0.35f)
+                                    )
+                                )
+                            }
+                        }
+                    }
+                }
+
+                // Section 7: Default Launcher & Initial Setup
+                item {
+                    SettingsCard(
+                        title = "Configuração Inicial do Launcher",
+                        subtitle = "Definir padrão e permissões",
+                        icon = Icons.Rounded.Tune
+                    ) {
+                        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                            Text(
+                                text = "Reveja a tela de boas-vindas com o assistente de configuração de launcher padrão e otimizações.",
+                                fontSize = 12.sp,
+                                color = Color.White.copy(alpha = 0.7f),
+                                lineHeight = 16.sp
+                            )
+
+                            OutlinedButton(
+                                onClick = onOpenWelcomeOnboarding,
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFF38BDF8))
+                            ) {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Rounded.OpenInNew,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text("Abrir Assistente de Boas-Vindas", fontWeight = FontWeight.Bold)
                             }
                         }
                     }

@@ -69,7 +69,7 @@ fun HomeScreenHeader(
     }
 
     val timeFormat = remember { SimpleDateFormat("HH:mm", Locale.getDefault()) }
-    val dateFormat = remember { SimpleDateFormat("EEEE, d 'de' MMMM", Locale("pt", "BR")) }
+    val dateFormat = remember { SimpleDateFormat("EEEE, d 'de' MMMM", Locale.forLanguageTag("pt-BR")) }
 
     val formattedTime = timeFormat.format(currentTime)
     val formattedDate = dateFormat.format(currentTime).replaceFirstChar { it.uppercase() }
@@ -120,7 +120,7 @@ private fun MaterialYouHeader(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 20.dp, vertical = 8.dp)
+            .padding(horizontal = 24.dp, vertical = 8.dp)
     ) {
         // Top action bar
         Row(
@@ -139,13 +139,13 @@ private fun MaterialYouHeader(
                 ) {
                     Icon(
                         imageVector = Icons.Rounded.AutoAwesome,
-                        contentDescription = "Gemini IA",
+                        contentDescription = "IA Front",
                         tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(16.dp)
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
-                        text = "Material You • Gemini AI",
+                        text = "Front Launcher • IA Ativa",
                         fontSize = 12.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = MaterialTheme.colorScheme.onPrimaryContainer
@@ -230,7 +230,7 @@ private fun MaterialYouHeader(
                 )
                 Icon(
                     imageVector = Icons.Rounded.AutoAwesome,
-                    contentDescription = "Gemini",
+                    contentDescription = "IA Front",
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier
                         .size(20.dp)

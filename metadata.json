@@ -1,6 +1,6 @@
 {
-  "name": "Home Launcher",
-  "description": "Android Home Launcher with customizable icons, smart gestures, automatic category organization, Material You dynamic wallpaper theming, and AI daily shortcut suggestions compatible with One UI and HyperOS styles.",
+  "name": "Front Launcher",
+  "description": "Front Launcher - Android Home Launcher de alta performance (até 120 FPS), ícones customizáveis, gestos inteligentes, categorização automática por IA, temas dinâmicos Material You, One UI e HyperOS.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

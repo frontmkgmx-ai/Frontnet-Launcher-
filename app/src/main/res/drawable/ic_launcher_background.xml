@@ -9,19 +9,21 @@
         android:pathData="M0,0h108v108h-108z">
         <aapt:attr name="android:fillColor">
             <gradient
-                android:startX="0"
-                android:startY="0"
-                android:endX="108"
-                android:endY="108"
+                android:startX="12"
+                android:startY="12"
+                android:endX="96"
+                android:endY="96"
                 android:type="linear">
-                <item android:color="#1A1B2F" android:offset="0.0" />
-                <item android:color="#132742" android:offset="0.5" />
-                <item android:color="#0D47A1" android:offset="1.0" />
+                <item android:offset="0.0" android:color="#0F172A" />
+                <item android:offset="0.45" android:color="#0284C7" />
+                <item android:offset="0.8" android:color="#4F46E5" />
+                <item android:offset="1.0" android:color="#7C3AED" />
             </gradient>
         </aapt:attr>
     </path>
-    <!-- Soft decorative ambient glow circles -->
+    <!-- Subtle high-tech diagonal energy lines -->
     <path
-        android:pathData="M54,54m-42,0a42,42 0,1 1,84 0a42,42 0,1 1,-84 0"
-        android:fillColor="#0D80D8FF" />
+        android:strokeColor="#33FFFFFF"
+        android:strokeWidth="1.5"
+        android:pathData="M20,88 L88,20 M12,60 L60,12 M48,96 L96,48" />
 </vector>

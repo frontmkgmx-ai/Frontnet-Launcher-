@@ -105,10 +105,10 @@ fun AiDailySuggestionsSection(
                             Spacer(modifier = Modifier.width(6.dp))
                             Surface(
                                 shape = RoundedCornerShape(8.dp),
-                                color = if (briefing?.isLiveGeminiResponse == true) Color(0xFF10B981) else MaterialTheme.colorScheme.primary.copy(alpha = 0.85f)
+                                color = if (briefing?.isLiveAiResponse == true) Color(0xFF10B981) else MaterialTheme.colorScheme.primary.copy(alpha = 0.85f)
                             ) {
                                 Text(
-                                    text = if (briefing?.isLiveGeminiResponse == true) "Gemini Live" else "Contextual",
+                                    text = if (briefing?.isLiveAiResponse == true) "IA Front" else "Contextual",
                                     fontSize = 9.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = Color.White,

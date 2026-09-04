@@ -109,10 +109,10 @@ fun AiRoutineModal(
                             Spacer(modifier = Modifier.width(8.dp))
                             Surface(
                                 shape = RoundedCornerShape(8.dp),
-                                color = if (briefing?.isLiveGeminiResponse == true) Color(0xFF10B981) else MaterialTheme.colorScheme.primary
+                                color = if (briefing?.isLiveAiResponse == true) Color(0xFF10B981) else MaterialTheme.colorScheme.primary
                             ) {
                                 Text(
-                                    text = if (briefing?.isLiveGeminiResponse == true) "Gemini 3.5 Flash" else "IA Heurística",
+                                    text = if (briefing?.isLiveAiResponse == true) "Motor IA Front" else "IA Contextual",
                                     fontSize = 10.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = Color.White,
@@ -315,7 +315,7 @@ fun AiRoutineModal(
                                 strokeWidth = 2.dp
                             )
                             Spacer(modifier = Modifier.width(10.dp))
-                            Text("Consultando Gemini...")
+                            Text("Processando com IA...")
                         } else {
                             Icon(
                                 imageVector = Icons.Rounded.Refresh,

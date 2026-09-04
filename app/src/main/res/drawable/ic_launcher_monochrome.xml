@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Monochrome version of Front Launcher F -->
+    <path
+        android:pathData="M37,33 L45,33 A2,2 0 0,1 47,35 L47,73 A2,2 0 0,1 45,75 L37,75 A2,2 0 0,1 35,73 L35,35 A2,2 0 0,1 37,33 Z"
+        android:fillColor="#FFFFFF" />
+    <path
+        android:pathData="M45,33 L67,33 A4,4 0 0,1 71,37 L71,41 A4,4 0 0,1 67,45 L47,45 L45,33 Z"
+        android:fillColor="#FFFFFF" />
+    <path
+        android:pathData="M47,50 L61,50 A3,3 0 0,1 64,53 L64,56 A3,3 0 0,1 61,59 L47,59 Z"
+        android:fillColor="#FFFFFF" />
+    <path
+        android:pathData="M70,51 L72,55 L76,57 L72,59 L70,63 L68,59 L64,57 L68,55 Z"
+        android:fillColor="#FFFFFF" />
+</vector>

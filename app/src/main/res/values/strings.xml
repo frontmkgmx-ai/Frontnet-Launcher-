@@ -1,21 +1,25 @@
 <resources>
-    <string name="app_name">Home Launcher</string>
-    <string name="launcher_search_placeholder">Search apps, web, actions…</string>
-    <string name="drawer_title">All Apps</string>
-    <string name="categories_title">Categories</string>
-    <string name="ai_suggestions_title">AI Daily Suggestions</string>
-    <string name="ai_suggestions_subtitle">Smart contextual shortcuts based on your daily routine</string>
-    <string name="settings_title">Launcher Settings</string>
-    <string name="theme_monet">Material You (Dynamic)</string>
-    <string name="theme_oneui">One UI Experience</string>
+    <string name="app_name">Front Launcher</string>
+    <string name="launcher_search_placeholder">Pesquisar aplicativos, atalhos…</string>
+    <string name="drawer_title">Aplicativos</string>
+    <string name="categories_title">Categorias</string>
+    <string name="ai_suggestions_title">Atalhos IA do Dia</string>
+    <string name="ai_suggestions_subtitle">Atalhos contextuais baseados na sua rotina diária</string>
+    <string name="settings_title">Configurações do Front Launcher</string>
+    <string name="theme_monet">Material You (Dinâmico)</string>
+    <string name="theme_oneui">Experiência One UI</string>
     <string name="theme_hyperos">HyperOS Glass</string>
-    <string name="icon_shape_circle">Circle</string>
+    <string name="icon_shape_circle">Círculo</string>
     <string name="icon_shape_squircle">Squircle (One UI)</string>
-    <string name="icon_shape_rounded">Rounded Square (HyperOS)</string>
-    <string name="icon_shape_teardrop">Teardrop</string>
-    <string name="gesture_swipe_up">Swipe Up: App Drawer</string>
-    <string name="gesture_swipe_down">Swipe Down: Quick Search</string>
-    <string name="gesture_double_tap">Double Tap: AI Routine</string>
-    <string name="gesture_pinch">Pinch: Customize &amp; Wallpapers</string>
+    <string name="icon_shape_rounded">Quadrado Arredondado (HyperOS)</string>
+    <string name="icon_shape_teardrop">Gota (Teardrop)</string>
+    <string name="gesture_swipe_up">Deslizar para Cima: Gaveta de Apps</string>
+    <string name="gesture_swipe_down">Deslizar para Baixo: Busca Rápida</string>
+    <string name="gesture_double_tap">Toque Duplo: Rotina IA</string>
+    <string name="gesture_pinch">Pinçar: Personalização &amp; Temas</string>
+    <string name="welcome_title">Bem-vindo ao Front Launcher</string>
+    <string name="welcome_subtitle">Launcher rápido até 120 FPS, com organização inteligente e temas dinâmicos</string>
+    <string name="btn_set_default">Definir como Launcher Padrão</string>
+    <string name="btn_start">Começar a Usar</string>
 </resources>
 

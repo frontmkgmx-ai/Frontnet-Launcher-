@@ -22,6 +22,6 @@ dependencyResolutionManagement {
   }
 }
 
-rootProject.name = "Home Launcher"
+rootProject.name = "Front Launcher"
 
 include(":app")
