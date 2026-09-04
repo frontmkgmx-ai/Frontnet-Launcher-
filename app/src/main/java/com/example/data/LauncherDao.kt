@@ -27,6 +27,12 @@ interface LauncherDao {
     @Query("UPDATE app_usage SET isPinnedToDock = :isPinned WHERE packageName = :packageName")
     suspend fun setPinnedToDock(packageName: String, isPinned: Boolean)
 
+    @Query("UPDATE app_usage SET isLocked = :isLocked WHERE packageName = :packageName")
+    suspend fun setAppLocked(packageName: String, isLocked: Boolean)
+
+    @Query("UPDATE app_usage SET isHidden = :isHidden WHERE packageName = :packageName")
+    suspend fun setAppHidden(packageName: String, isHidden: Boolean)
+
     @Query("UPDATE app_usage SET categoryName = :categoryName WHERE packageName = :packageName")
     suspend fun updateAppCategory(packageName: String, categoryName: String)
 

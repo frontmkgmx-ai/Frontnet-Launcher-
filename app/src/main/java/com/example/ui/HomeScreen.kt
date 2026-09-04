@@ -46,6 +46,8 @@ import com.example.ui.components.AppActionDialog
 import com.example.ui.components.AppDrawerSheet
 import com.example.ui.components.AppIconComposable
 import com.example.ui.components.CategorySelectionDialog
+import com.example.ui.components.DockConfigDialog
+import com.example.ui.components.AppLockConfigDialog
 import com.example.ui.components.CustomizeLauncherSheet
 import com.example.ui.components.DockBar
 import com.example.ui.components.HomeScreenHeader
@@ -139,13 +141,13 @@ fun HomeScreen(
             // AI Daily Routine & Suggestions Card
             AiDailySuggestionsSection(
                 briefing = uiState.aiBriefing,
-                installedApps = uiState.apps,
+                installedApps = uiState.apps.filter { !it.isHidden },
                 iconShape = uiState.iconShape,
                 iconThemed = uiState.iconThemed,
                 themeStyle = uiState.themeStyle,
                 isLoading = uiState.isAiLoading,
                 onRefreshClick = { viewModel.refreshAiSuggestions() },
-                onAppClick = { viewModel.launchApp(it) },
+                onAppClick = { com.example.util.AppLauncherHelper.launchAppSafely(activity as? androidx.fragment.app.FragmentActivity, it, viewModel) },
                 onOpenBriefingModal = { viewModel.openAiRoutineModal(true) }
             )
 
@@ -260,7 +262,7 @@ fun HomeScreen(
                 iconThemed = uiState.iconThemed,
                 themeStyle = uiState.themeStyle,
                 dockBlurColor = uiState.currentWallpaper.dockBlurColor,
-                onAppClick = { viewModel.launchApp(it) },
+                onAppClick = { com.example.util.AppLauncherHelper.launchAppSafely(activity as? androidx.fragment.app.FragmentActivity, it, viewModel) },
                 onAppLongClick = { viewModel.openAppMenu(it) },
                 onOpenDrawer = { viewModel.setDrawerOpen(true) }
             )
@@ -276,7 +278,7 @@ fun HomeScreen(
         ) {
             AppDrawerSheet(
                 isOpen = uiState.isDrawerOpen,
-                apps = uiState.apps,
+                apps = uiState.apps.filter { !it.isHidden },
                 searchQuery = uiState.searchQuery,
                 drawerStyle = uiState.appDrawerStyle,
                 selectedCategoryFilter = uiState.selectedCategoryFilter,
@@ -287,7 +289,7 @@ fun HomeScreen(
                 themeStyle = uiState.themeStyle,
                 onSearchQueryChange = { viewModel.onSearchQueryChanged(it) },
                 onSelectCategoryFilter = { viewModel.selectCategoryFilter(it) },
-                onAppClick = { viewModel.launchApp(it) },
+                onAppClick = { com.example.util.AppLauncherHelper.launchAppSafely(activity as? androidx.fragment.app.FragmentActivity, it, viewModel) },
                 onAppLongClick = { viewModel.openAppMenu(it) },
                 onCloseDrawer = { viewModel.setDrawerOpen(false) }
             )
@@ -329,6 +331,8 @@ fun HomeScreen(
                     activity?.launchWidgetPicker()
                     viewModel.openCustomizeSheet(false)
                 },
+                onDockConfigClick = { viewModel.setDockConfigOpen(true) },
+                onAppLockConfigClick = { viewModel.setAppLockConfigOpen(true) },
                 onClose = { viewModel.openCustomizeSheet(false) }
             )
         }
@@ -343,14 +347,29 @@ fun HomeScreen(
                 isOpen = uiState.isAiRoutineModalOpen,
                 briefing = uiState.aiBriefing,
                 isLoading = uiState.isAiLoading,
-                installedApps = uiState.apps,
+                installedApps = uiState.apps.filter { !it.isHidden },
                 iconShape = uiState.iconShape,
                 iconThemed = uiState.iconThemed,
                 onRefresh = { viewModel.refreshAiSuggestions() },
-                onAppClick = { viewModel.launchApp(it) },
+                onAppClick = { com.example.util.AppLauncherHelper.launchAppSafely(activity as? androidx.fragment.app.FragmentActivity, it, viewModel) },
                 onClose = { viewModel.openAiRoutineModal(false) }
             )
         }
+
+        DockConfigDialog(
+            isOpen = uiState.isDockConfigOpen,
+            apps = uiState.apps.filter { !it.isHidden },
+            onClose = { viewModel.setDockConfigOpen(false) },
+            onTogglePin = { viewModel.togglePinAppToDock(it) }
+        )
+
+        AppLockConfigDialog(
+            isOpen = uiState.isAppLockConfigOpen,
+            apps = uiState.apps,
+            onClose = { viewModel.setAppLockConfigOpen(false) },
+            onToggleLock = { viewModel.toggleAppLock(it) },
+            onToggleHide = { viewModel.toggleAppHidden(it) }
+        )
 
         // 4. Universal Quick Search Sheet
         AnimatedVisibility(
@@ -360,12 +379,12 @@ fun HomeScreen(
         ) {
             SearchSheet(
                 isOpen = uiState.isSearchSheetOpen,
-                apps = uiState.apps,
+                apps = uiState.apps.filter { !it.isHidden },
                 searchQuery = uiState.searchQuery,
                 iconShape = uiState.iconShape,
                 iconThemed = uiState.iconThemed,
                 onSearchQueryChange = { viewModel.onSearchQueryChanged(it) },
-                onAppClick = { viewModel.launchApp(it) },
+                onAppClick = { com.example.util.AppLauncherHelper.launchAppSafely(activity as? androidx.fragment.app.FragmentActivity, it, viewModel) },
                 onClose = { viewModel.openSearchSheet(false) }
             )
         }
@@ -376,7 +395,7 @@ fun HomeScreen(
             iconShape = uiState.iconShape,
             iconThemed = uiState.iconThemed,
             onDismiss = { viewModel.openAppMenu(null) },
-            onLaunch = { viewModel.launchApp(it) },
+            onLaunch = { com.example.util.AppLauncherHelper.launchAppSafely(activity as? androidx.fragment.app.FragmentActivity, it, viewModel) },
             onTogglePinDock = { viewModel.togglePinAppToDock(it) },
             onChangeCategoryClick = { viewModel.openChangeCategoryDialog(true) }
         )

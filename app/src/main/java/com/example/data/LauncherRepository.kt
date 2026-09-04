@@ -121,6 +121,8 @@ class LauncherRepository(
                     lastLaunchedTimestamp = usage?.lastLaunchedTimestamp ?: 0L,
                     isPinnedToDock = isPinned,
                     isFavorite = usage?.isFavorite ?: false,
+                isHidden = usage?.isHidden ?: false,
+                isLocked = usage?.isLocked ?: false,
                     isSystemDefault = false
                 )
             )
@@ -147,7 +149,8 @@ class LauncherRepository(
                 lastLaunchedTimestamp = app.lastLaunchedTimestamp,
                 isPinnedToDock = app.isPinnedToDock,
                 isFavorite = app.isFavorite,
-                isHidden = false
+                isHidden = app.isHidden,
+                isLocked = app.isLocked
             )
         }
         dao.insertAllAppUsages(entitiesToSave)
@@ -200,6 +203,14 @@ class LauncherRepository(
 
     suspend fun togglePinToDock(packageName: String, currentPinned: Boolean) = withContext(Dispatchers.IO) {
         dao.setPinnedToDock(packageName, !currentPinned)
+    }
+
+    suspend fun toggleAppLock(packageName: String, currentLocked: Boolean) = withContext(Dispatchers.IO) {
+        dao.setAppLocked(packageName, !currentLocked)
+    }
+
+    suspend fun toggleAppHidden(packageName: String, currentHidden: Boolean) = withContext(Dispatchers.IO) {
+        dao.setAppHidden(packageName, !currentHidden)
     }
 
     suspend fun updateCategory(packageName: String, newCategory: AppCategory) = withContext(Dispatchers.IO) {
@@ -258,6 +269,8 @@ class LauncherRepository(
                 lastLaunchedTimestamp = usage?.lastLaunchedTimestamp ?: 0L,
                 isPinnedToDock = usage?.isPinnedToDock ?: item.defaultDock,
                 isFavorite = usage?.isFavorite ?: false,
+                isHidden = usage?.isHidden ?: false,
+                isLocked = usage?.isLocked ?: false,
                 isSystemDefault = true,
                 isLauncherSettingsShortcut = item.isLauncherSettings
             )

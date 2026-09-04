@@ -13,7 +13,8 @@ data class AppUsageEntity(
     val lastLaunchedTimestamp: Long = 0L,
     val isPinnedToDock: Boolean = false,
     val isFavorite: Boolean = false,
-    val isHidden: Boolean = false
+    val isHidden: Boolean = false,
+    val isLocked: Boolean = false
 )
 
 @Entity(tableName = "launcher_config")

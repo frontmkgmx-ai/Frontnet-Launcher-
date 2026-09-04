@@ -50,7 +50,9 @@ data class LauncherUiState(
     val isAiLoading: Boolean = false,
     val gestureSwipeDown: GestureAction = GestureAction.SEARCH,
     val gestureDoubleTap: GestureAction = GestureAction.AI_ROUTINE,
-    val statusMessage: String? = null
+    val statusMessage: String? = null,
+    val isDockConfigOpen: Boolean = false,
+    val isAppLockConfigOpen: Boolean = false
 )
 
 class LauncherViewModel(application: Application) : AndroidViewModel(application) {
@@ -261,6 +263,34 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
 
     fun openChangeCategoryDialog(open: Boolean) {
         _uiState.update { it.copy(isChangeCategoryDialogOpen = open) }
+    }
+
+    fun setDockConfigOpen(open: Boolean) {
+        _uiState.update { it.copy(isDockConfigOpen = open) }
+    }
+
+    fun setAppLockConfigOpen(open: Boolean) {
+        _uiState.update { it.copy(isAppLockConfigOpen = open) }
+    }
+
+    fun toggleAppLock(app: LauncherApp) {
+        viewModelScope.launch {
+            repository.toggleAppLock(app.packageName, app.isLocked)
+            val updatedApps = _uiState.value.apps.map {
+                if (it.packageName == app.packageName) it.copy(isLocked = !it.isLocked) else it
+            }
+            _uiState.update { it.copy(apps = updatedApps) }
+        }
+    }
+
+    fun toggleAppHidden(app: LauncherApp) {
+        viewModelScope.launch {
+            repository.toggleAppHidden(app.packageName, app.isHidden)
+            val updatedApps = _uiState.value.apps.map {
+                if (it.packageName == app.packageName) it.copy(isHidden = !it.isHidden) else it
+            }
+            _uiState.update { it.copy(apps = updatedApps) }
+        }
     }
 
     fun togglePinAppToDock(app: LauncherApp) {

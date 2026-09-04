@@ -34,6 +34,9 @@ import androidx.compose.material.icons.rounded.Gesture
 import androidx.compose.material.icons.rounded.Palette
 import androidx.compose.material.icons.rounded.SmartButton
 import androidx.compose.material.icons.rounded.Speed
+import androidx.compose.material.icons.rounded.Security
+import androidx.compose.material.icons.rounded.PushPin
+import androidx.compose.material.icons.rounded.Lock
 import androidx.compose.material.icons.rounded.Tune
 import androidx.compose.material.icons.rounded.Wallpaper
 import androidx.compose.material3.Button
@@ -98,6 +101,8 @@ fun CustomizeLauncherSheet(
     onOpenWelcomeOnboarding: () -> Unit,
     onSetDefaultLauncherClick: () -> Unit = {},
     onAddWidgetClick: () -> Unit = {},
+    onDockConfigClick: () -> Unit = {},
+    onAppLockConfigClick: () -> Unit = {},
     onClose: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -612,6 +617,45 @@ fun CustomizeLauncherSheet(
                                         checkedTrackColor = Color(0xFF00E5FF).copy(alpha = 0.35f)
                                     )
                                 )
+                            }
+                        }
+                    }
+                }
+
+                // Section 6.5: AppLock & Dock Configuration
+                item {
+                    SettingsCard(
+                        title = "Segurança & Organização",
+                        subtitle = "Dock, Ocultar e Bloquear Apps",
+                        icon = Icons.Rounded.Security
+                    ) {
+                        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                            OutlinedButton(
+                                onClick = onDockConfigClick,
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Rounded.PushPin,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text("Configurar Apps da Dock", fontWeight = FontWeight.Bold)
+                            }
+
+                            OutlinedButton(
+                                onClick = onAppLockConfigClick,
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFFF43F5E))
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Rounded.Lock,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text("AppLock (Bloquear / Ocultar)", fontWeight = FontWeight.Bold)
                             }
                         }
                     }

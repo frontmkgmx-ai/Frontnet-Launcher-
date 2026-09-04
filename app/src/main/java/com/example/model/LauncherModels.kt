@@ -84,7 +84,9 @@ data class LauncherApp(
     val isPinnedToDock: Boolean = false,
     val isFavorite: Boolean = false,
     val isSystemDefault: Boolean = false,
-    val isLauncherSettingsShortcut: Boolean = false
+    val isLauncherSettingsShortcut: Boolean = false,
+    val isHidden: Boolean = false,
+    val isLocked: Boolean = false
 )
 
 data class AiShortcutSuggestion(

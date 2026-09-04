@@ -2,7 +2,7 @@ package com.example
 
 import android.os.Build
 import android.os.Bundle
-import androidx.activity.ComponentActivity
+import androidx.fragment.app.FragmentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -24,7 +24,7 @@ import android.provider.Settings
 import androidx.activity.result.contract.ActivityResultContracts
 import com.example.widget.WidgetHostManager
 
-class MainActivity : ComponentActivity() {
+class MainActivity : FragmentActivity() {
 
   private val viewModel: LauncherViewModel by viewModels()
   lateinit var widgetHostManager: WidgetHostManager
