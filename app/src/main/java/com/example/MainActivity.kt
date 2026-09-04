@@ -24,7 +24,7 @@ import android.provider.Settings
 import androidx.activity.result.contract.ActivityResultContracts
 import com.example.widget.WidgetHostManager
 
-class MainActivity : FragmentActivity() {
+class MainActivity : androidx.fragment.app.FragmentActivity() {
 
   private val viewModel: LauncherViewModel by viewModels()
   lateinit var widgetHostManager: WidgetHostManager
