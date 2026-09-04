@@ -24,7 +24,7 @@ import android.provider.Settings
 import androidx.activity.result.contract.ActivityResultContracts
 import com.example.widget.WidgetHostManager
 
-class MainActivity : androidx.fragment.app.FragmentActivity() {
+class MainActivity : FragmentActivity() {
 
   private val viewModel: LauncherViewModel by viewModels()
   lateinit var widgetHostManager: WidgetHostManager
@@ -104,15 +104,17 @@ class MainActivity : androidx.fragment.app.FragmentActivity() {
         applyHighRefreshRate(uiState.highRefreshRateEnabled)
       }
 
-      // Back handler to close overlay drawer or modals when user presses Back
+      // Back handler to close overlay drawer, settings page or modals when user presses Back
       BackHandler(
-        enabled = uiState.isDrawerOpen ||
+        enabled = uiState.isSettingsPageOpen ||
+                uiState.isDrawerOpen ||
                 uiState.isCustomizeSheetOpen ||
                 uiState.isAiRoutineModalOpen ||
                 uiState.isSearchSheetOpen ||
                 uiState.selectedAppForMenu != null
       ) {
         when {
+          uiState.isSettingsPageOpen -> viewModel.openSettingsPage(false)
           uiState.selectedAppForMenu != null -> viewModel.openAppMenu(null)
           uiState.isSearchSheetOpen -> viewModel.openSearchSheet(false)
           uiState.isAiRoutineModalOpen -> viewModel.openAiRoutineModal(false)

@@ -108,7 +108,7 @@ fun AiDailySuggestionsSection(
                                 color = if (briefing?.isLiveAiResponse == true) Color(0xFF10B981) else MaterialTheme.colorScheme.primary.copy(alpha = 0.85f)
                             ) {
                                 Text(
-                                    text = if (briefing?.isLiveAiResponse == true) "IA Front" else "Contextual",
+                                    text = "Sugestões",
                                     fontSize = 9.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = Color.White,

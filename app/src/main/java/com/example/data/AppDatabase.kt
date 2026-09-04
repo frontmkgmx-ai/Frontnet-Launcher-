@@ -8,7 +8,7 @@ import androidx.room.RoomDatabase
 @androidx.room.TypeConverters(StringListConverter::class)
 @Database(
     entities = [AppUsageEntity::class, LauncherConfigEntity::class],
-    version = 4,
+    version = 6,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -24,7 +24,10 @@ abstract class AppDatabase : RoomDatabase() {
                     context.applicationContext,
                     AppDatabase::class.java,
                     "launcher_database.db"
-                ).fallbackToDestructiveMigration(true).build()
+                )
+                    .fallbackToDestructiveMigration(true)
+                    .fallbackToDestructiveMigrationOnDowngrade(true)
+                    .build()
                 INSTANCE = instance
                 instance
             }

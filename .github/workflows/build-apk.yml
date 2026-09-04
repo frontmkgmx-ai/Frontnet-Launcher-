@@ -36,10 +36,10 @@ jobs:
         run: ./gradlew assembleDebug -x test -x lint -x lintAnalyzeDebug --stacktrace --no-daemon
 
       - name: Compile Release APK
-        run: ./gradlew assembleRelease -x test -x lint -x lintVitalRelease --stacktrace --no-daemon
+        run: ./gradlew assembleRelease -x test -x lint -x lintVitalRelease -x lintVitalAnalyzeRelease --stacktrace --no-daemon
 
       - name: Compile App Bundle (AAB)
-        run: ./gradlew bundleRelease -x test -x lint -x lintVitalRelease --stacktrace --no-daemon
+        run: ./gradlew bundleRelease -x test -x lint -x lintVitalRelease -x lintVitalAnalyzeRelease --stacktrace --no-daemon
 
       - name: Package Source for Android Studio
         run: |

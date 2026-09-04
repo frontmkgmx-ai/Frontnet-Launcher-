@@ -6,9 +6,32 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.provider.MediaStore
 import android.provider.Telephony
+import com.example.model.LauncherApp
 import android.os.Build
 
 object DefaultAppsResolver {
+
+    fun getDefaultAppsPackages(context: Context): List<String> = getDefaultApps(context)
+
+    fun resolveDefaultLauncherApps(context: Context, allApps: List<LauncherApp>): List<LauncherApp> {
+        val defaultPackages = getDefaultApps(context)
+        val matchedApps = mutableListOf<LauncherApp>()
+        for (pkg in defaultPackages) {
+            val found = allApps.firstOrNull { it.packageName == pkg }
+            if (found != null && !matchedApps.contains(found)) {
+                matchedApps.add(found.copy(isPinnedToDock = true))
+            }
+        }
+        if (matchedApps.size < 4) {
+            for (app in allApps) {
+                if (matchedApps.size >= 5) break
+                if (!matchedApps.contains(app) && !app.isLauncherSettingsShortcut) {
+                    matchedApps.add(app.copy(isPinnedToDock = true))
+                }
+            }
+        }
+        return matchedApps.take(5)
+    }
 
     fun getDefaultApps(context: Context): List<String> {
         val pm = context.packageManager

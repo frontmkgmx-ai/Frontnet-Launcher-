@@ -35,7 +35,6 @@ data class LauncherUiState(
     val isDrawerOpen: Boolean = false,
     val drawerCategorized: Boolean = true,
     val addNewAppsToHome: Boolean = true,
-    val dockApps: List<String> = emptyList(),
     val hasInitializedDock: Boolean = false,
     val selectedCategoryFilter: AppCategory? = null,
     val isCustomizeSheetOpen: Boolean = false,
@@ -61,7 +60,13 @@ data class LauncherUiState(
     val gestureDoubleTap: GestureAction = GestureAction.AI_ROUTINE,
     val statusMessage: String? = null,
     val isDockConfigOpen: Boolean = false,
-    val isAppLockConfigOpen: Boolean = false
+    val isAppLockConfigOpen: Boolean = false,
+    val isSettingsPageOpen: Boolean = false,
+    val isAiEnabled: Boolean = true,
+    val customWallpaperUri: String? = null,
+    val homePageCount: Int = 1,
+    val isEditMode: Boolean = false,
+    val gridColumns: Int = 4
 )
 
 class LauncherViewModel(application: Application) : AndroidViewModel(application) {
@@ -192,13 +197,15 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
                         currentWallpaper = wallpaper,
                         drawerCategorized = cfg.drawerCategorized,
                         addNewAppsToHome = cfg.addNewAppsToHome,
-                        dockApps = cfg.dockApps,
                         hasInitializedDock = cfg.hasInitializedDock,
                         gestureSwipeDown = swipeDownAct,
                         gestureDoubleTap = doubleTapAct,
                         isFirstRunCompleted = cfg.isFirstRunCompleted,
                         isWelcomeOnboardingOpen = !cfg.isFirstRunCompleted,
-                        highRefreshRateEnabled = cfg.highRefreshRateEnabled
+                        highRefreshRateEnabled = cfg.highRefreshRateEnabled,
+                        isAiEnabled = cfg.isAiEnabled,
+                        customWallpaperUri = cfg.customWallpaperUri,
+                        homePageCount = cfg.homePageCount
                     )
                 }
             }
@@ -208,6 +215,10 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     }
 
     fun refreshAiSuggestions() {
+        if (!_uiState.value.isAiEnabled) {
+            _uiState.update { it.copy(aiBriefing = null, isAiLoading = false) }
+            return
+        }
         viewModelScope.launch {
             _uiState.update { it.copy(isAiLoading = true) }
             val briefing = FrontAiService.getDailyRoutineSuggestions(
@@ -220,7 +231,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
 
     fun launchApp(app: LauncherApp) {
         if (app.isLauncherSettingsShortcut || app.packageName == "com.front.launcher.settings") {
-            openCustomizeSheet(true)
+            openSettingsPage(true)
             _uiState.update { it.copy(isDrawerOpen = false, isSearchSheetOpen = false) }
             return
         }
@@ -470,20 +481,96 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
                     wallpaperId = state.currentWallpaper.id,
                     drawerCategorized = state.drawerCategorized,
                     addNewAppsToHome = state.addNewAppsToHome,
-                    dockApps = state.dockApps,
+                    dockApps = state.dockApps.map { it.packageName },
                     hasInitializedDock = state.hasInitializedDock,
                     gestureSwipeDownAction = state.gestureSwipeDown.name,
                     gestureDoubleTapAction = state.gestureDoubleTap.name,
                     isFirstRunCompleted = state.isFirstRunCompleted,
-                    highRefreshRateEnabled = state.highRefreshRateEnabled
+                    highRefreshRateEnabled = state.highRefreshRateEnabled,
+                    isAiEnabled = state.isAiEnabled,
+                    customWallpaperUri = state.customWallpaperUri,
+                    homePageCount = state.homePageCount
                 )
             )
         }
     }
+
     fun toggleAddNewAppsToHome() {
         val newMode = !_uiState.value.addNewAppsToHome
         _uiState.update { it.copy(addNewAppsToHome = newMode) }
         persistConfig()
+    }
+
+    fun openSettingsPage(open: Boolean) {
+        _uiState.update { it.copy(isSettingsPageOpen = open, isCustomizeSheetOpen = false) }
+    }
+
+    fun setAiEnabled(enabled: Boolean) {
+        _uiState.update { it.copy(isAiEnabled = enabled) }
+        if (!enabled) {
+            _uiState.update { it.copy(aiBriefing = null) }
+        } else {
+            refreshAiSuggestions()
+        }
+        persistConfig()
+    }
+
+    fun setCustomWallpaperUri(uri: String?) {
+        _uiState.update { it.copy(customWallpaperUri = uri) }
+        persistConfig()
+    }
+
+    fun addHomePage() {
+        _uiState.update { it.copy(homePageCount = it.homePageCount + 1) }
+        persistConfig()
+    }
+
+    fun removeHomePage() {
+        if (_uiState.value.homePageCount > 1) {
+            _uiState.update { it.copy(homePageCount = it.homePageCount - 1) }
+            persistConfig()
+        }
+    }
+
+    fun setEditMode(enabled: Boolean) {
+        _uiState.update { it.copy(isEditMode = enabled) }
+    }
+
+    fun setGridColumns(cols: Int) {
+        _uiState.update { it.copy(gridColumns = cols.coerceIn(3, 6)) }
+        persistConfig()
+    }
+
+    fun setDrawerCategorized(categorized: Boolean) {
+        _uiState.update { it.copy(drawerCategorized = categorized) }
+        persistConfig()
+    }
+
+    fun updateDockApps(newDockApps: List<LauncherApp>) {
+        val limited = newDockApps.take(5)
+        viewModelScope.launch {
+            // Unpin all current apps
+            for (app in _uiState.value.apps) {
+                if (app.isPinnedToDock && limited.none { it.packageName == app.packageName }) {
+                    repository.togglePinToDock(app.packageName, true)
+                }
+            }
+            // Pin selected apps
+            for (app in limited) {
+                repository.togglePinToDock(app.packageName, false)
+            }
+            val updatedApps = _uiState.value.apps.map { current ->
+                current.copy(isPinnedToDock = limited.any { it.packageName == current.packageName })
+            }
+            _uiState.update {
+                it.copy(
+                    apps = updatedApps,
+                    dockApps = limited.map { a -> a.copy(isPinnedToDock = true) },
+                    hasInitializedDock = true
+                )
+            }
+            persistConfig()
+        }
     }
 }
 
