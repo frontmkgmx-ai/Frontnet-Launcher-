@@ -85,6 +85,7 @@ class MainActivity : FragmentActivity() {
 
   fun launchWidgetPicker() {
       val appWidgetId = widgetHostManager.allocateAppWidgetId()
+      if (appWidgetId == -1) return
       val pickIntent = Intent(AppWidgetManager.ACTION_APPWIDGET_PICK)
       pickIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
       pickWidgetLauncher.launch(pickIntent)

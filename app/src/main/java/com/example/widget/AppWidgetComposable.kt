@@ -18,16 +18,22 @@ fun AppWidgetComposable(
 ) {
     val context = LocalContext.current
     val hostView = remember(appWidgetId) {
-        widgetHostManager.createView(context, appWidgetId, providerInfo)
+        try {
+            widgetHostManager.createView(context, appWidgetId, providerInfo)
+        } catch (e: Exception) {
+            null
+        }
     }
 
-    AndroidView(
-        modifier = modifier.fillMaxSize(),
-        factory = {
-            hostView
-        },
-        update = {
-            // Update logic if needed when re-composed
-        }
-    )
+    if (hostView != null) {
+        AndroidView(
+            modifier = modifier.fillMaxSize(),
+            factory = {
+                hostView
+            },
+            update = {
+                // Update logic if needed when re-composed
+            }
+        )
+    }
 }

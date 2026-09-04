@@ -27,15 +27,28 @@ class WidgetHostManager(context: Context) {
     }
 
     fun allocateAppWidgetId(): Int {
-        return appWidgetHost.allocateAppWidgetId()
+        return try {
+            appWidgetHost.allocateAppWidgetId()
+        } catch (e: Exception) {
+            -1
+        }
     }
 
     fun deleteAppWidgetId(appWidgetId: Int) {
-        appWidgetHost.deleteAppWidgetId(appWidgetId)
+        try {
+            appWidgetHost.deleteAppWidgetId(appWidgetId)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
-    fun createView(context: Context, appWidgetId: Int, appWidgetInfo: AppWidgetProviderInfo): AppWidgetHostView {
-        return appWidgetHost.createView(context, appWidgetId, appWidgetInfo)
+    fun createView(context: Context, appWidgetId: Int, appWidgetInfo: AppWidgetProviderInfo): AppWidgetHostView? {
+        return try {
+            appWidgetHost.createView(context, appWidgetId, appWidgetInfo)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
     }
 
     companion object {

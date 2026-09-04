@@ -82,7 +82,14 @@ fun DockConfigDialog(
                                 .padding(horizontal = 20.dp, vertical = 12.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            if (app.iconBitmap != null) {
+                            val imgBitmap = app.icon ?: com.example.util.AppIconCache.getCachedImageBitmap(app.packageName)
+                            if (imgBitmap != null) {
+                                Image(
+                                    bitmap = imgBitmap,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(40.dp)
+                                )
+                            } else if (app.iconBitmap != null) {
                                 Image(
                                     bitmap = app.iconBitmap.asImageBitmap(),
                                     contentDescription = null,
@@ -177,7 +184,14 @@ fun AppLockConfigDialog(
                                 .padding(horizontal = 20.dp, vertical = 12.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            if (app.iconBitmap != null) {
+                            val imgBitmap = app.icon ?: com.example.util.AppIconCache.getCachedImageBitmap(app.packageName)
+                            if (imgBitmap != null) {
+                                Image(
+                                    bitmap = imgBitmap,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(40.dp)
+                                )
+                            } else if (app.iconBitmap != null) {
                                 Image(
                                     bitmap = app.iconBitmap.asImageBitmap(),
                                     contentDescription = null,

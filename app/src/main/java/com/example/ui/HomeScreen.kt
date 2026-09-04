@@ -246,7 +246,11 @@ fun HomeScreen(
                     ) {
                         uiState.widgets.forEach { appWidgetId ->
                             val providerInfo = remember(appWidgetId) {
-                                activity.widgetHostManager.appWidgetManager.getAppWidgetInfo(appWidgetId)
+                                try {
+                                    activity.widgetHostManager.appWidgetManager.getAppWidgetInfo(appWidgetId)
+                                } catch (e: Exception) {
+                                    null
+                                }
                             }
                             if (providerInfo != null) {
                                 Box(
@@ -257,7 +261,11 @@ fun HomeScreen(
                                             detectTapGestures(
                                                 onLongPress = {
                                                     viewModel.removeWidget(appWidgetId)
-                                                    activity.widgetHostManager.deleteAppWidgetId(appWidgetId)
+                                                    try {
+                                                        activity.widgetHostManager.deleteAppWidgetId(appWidgetId)
+                                                    } catch (e: Exception) {
+                                                        // Ignored
+                                                    }
                                                 }
                                             )
                                         }
