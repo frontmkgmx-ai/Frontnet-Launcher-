@@ -15,14 +15,12 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Set up JDK 17
+      - name: Set up JDK 17 with Gradle Cache
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
-
-      - name: Setup Gradle
-        uses: actions/setup-gradle@v3
+          cache: 'gradle'
 
       - name: Make Gradlew Executable
         run: chmod +x gradlew
