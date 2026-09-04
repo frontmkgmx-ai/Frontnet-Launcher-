@@ -83,7 +83,7 @@ fun HomeScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(uiState.currentWallpaper.backgroundBrush)
+            .background(Color.Transparent)
             // Gesture detection for wallpaper canvas
             .pointerInput(Unit) {
                 detectTapGestures(

@@ -85,11 +85,13 @@ fun AppIconComposable(
                     clip = false
                 )
                 .clip(shape)
-                .background(
+                .then(
                     if (iconThemed) {
-                        MaterialTheme.colorScheme.primaryContainer
+                        Modifier.background(MaterialTheme.colorScheme.primaryContainer)
+                    } else if (app.iconDrawable == null) {
+                        Modifier.background(app.iconTint?.copy(alpha = 0.9f) ?: MaterialTheme.colorScheme.surfaceVariant)
                     } else {
-                        app.iconTint?.copy(alpha = 0.9f) ?: MaterialTheme.colorScheme.surfaceVariant
+                        Modifier
                     }
                 )
         ) {
@@ -139,7 +141,7 @@ fun AppIconComposable(
                         Image(
                             bitmap = bitmap,
                             contentDescription = app.label,
-                            modifier = Modifier.size((iconSizeDp * 0.72).dp)
+                            modifier = Modifier.size(iconSizeDp.dp).clip(shape)
                         )
                     } else {
                         Icon(
@@ -177,7 +179,14 @@ fun AppIconComposable(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 textAlign = TextAlign.Center,
-                lineHeight = 12.sp
+                lineHeight = 12.sp,
+                style = androidx.compose.ui.text.TextStyle(
+                    shadow = androidx.compose.ui.graphics.Shadow(
+                        color = Color.Black.copy(alpha = 0.6f),
+                        offset = androidx.compose.ui.geometry.Offset(0f, 2f),
+                        blurRadius = 4f
+                    )
+                )
             )
         }
     }
