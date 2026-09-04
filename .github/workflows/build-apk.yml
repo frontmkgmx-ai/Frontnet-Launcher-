@@ -15,6 +15,8 @@ jobs:
   build:
     name: Build APK
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout Repository
@@ -47,3 +49,13 @@ jobs:
           name: FrontLauncher-Debug-APK
           path: app/build/outputs/apk/debug/*.apk
           retention-days: 14
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        if: github.event_name != 'pull_request'
+        with:
+          tag_name: build-${{ github.run_number }}
+          name: "Front Launcher Build #${{ github.run_number }}"
+          body: "APK compilado automaticamente pelo GitHub Actions a partir do último envio para o repositório."
+          files: app/build/outputs/apk/debug/*.apk
+
