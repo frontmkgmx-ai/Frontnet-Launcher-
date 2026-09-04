@@ -65,6 +65,12 @@ class LauncherRepository(
         val appList = mutableListOf<LauncherApp>()
         val currentPackageName = context.packageName
 
+        val defaultDockPackages = if (existingUsageMap.none { it.value.isPinnedToDock }) {
+            com.example.util.DefaultAppsResolver.getDefaultAppsPackages(context)
+        } else {
+            emptyList()
+        }
+
         for (resolveInfo in resolvedList) {
             val pkg = resolveInfo.activityInfo.packageName
             // Exclude self launcher from drawer if desired or keep with special label
@@ -100,6 +106,8 @@ class LauncherRepository(
             } else {
                 autoCategory
             }
+            
+            val isPinned = usage?.isPinnedToDock ?: defaultDockPackages.contains(pkg)
 
             appList.add(
                 LauncherApp(
@@ -111,7 +119,7 @@ class LauncherRepository(
                     iconBitmap = null,
                     launchCount = usage?.launchCount ?: 0,
                     lastLaunchedTimestamp = usage?.lastLaunchedTimestamp ?: 0L,
-                    isPinnedToDock = usage?.isPinnedToDock ?: false,
+                    isPinnedToDock = isPinned,
                     isFavorite = usage?.isFavorite ?: false,
                     isSystemDefault = false
                 )
