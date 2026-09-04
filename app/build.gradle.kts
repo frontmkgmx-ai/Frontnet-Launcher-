@@ -9,6 +9,7 @@ plugins {
   alias(libs.plugins.roborazzi)
   alias(libs.plugins.secrets)
   alias(libs.plugins.google.services)
+  id("com.google.firebase.crashlytics")
 }
 
 android {
@@ -140,7 +141,14 @@ dependencies {
   // Coroutines
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
   implementation(platform(libs.androidx.compose.bom))
-  implementation(platform(libs.firebase.bom))
+  implementation(platform("com.google.firebase:firebase-bom:33.4.0"))
+  implementation("com.google.firebase:firebase-auth-ktx")
+  implementation("com.google.firebase:firebase-firestore-ktx")
+  implementation("com.google.firebase:firebase-analytics-ktx")
+  implementation("com.google.firebase:firebase-crashlytics-ktx")
+  implementation("com.google.firebase:firebase-perf-ktx")
+  implementation("com.google.firebase:firebase-appcheck-playintegrity")
+  implementation("com.google.firebase:firebase-appcheck-debug")
   // implementation(libs.accompanist.permissions)
   implementation(libs.androidx.activity.compose)
   // implementation(libs.androidx.camera.camera2)
@@ -164,8 +172,6 @@ dependencies {
   implementation(libs.androidx.room.runtime)
   implementation(libs.coil.compose)
   implementation(libs.converter.moshi)
-  implementation(libs.firebase.ai)
-  // Uncomment to use Firestore:
   // implementation(libs.firebase.firestore)
 
   // Uncomment ALL FOUR of the following dependencies together to use Firebase Auth and Google
@@ -174,8 +180,6 @@ dependencies {
   // implementation(libs.androidx.credentials)
   // implementation(libs.androidx.credentials.play.services)
   // implementation(libs.googleid)
-  implementation(libs.firebase.appcheck.recaptcha)
-  implementation(libs.firebase.appcheck.debug)
   implementation(libs.kotlinx.coroutines.android)
   implementation(libs.kotlinx.coroutines.core)
   implementation(libs.logging.interceptor)
