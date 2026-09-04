@@ -37,8 +37,8 @@ data class LauncherConfigEntity(
     val gestureSwipeDownAction: String = "SEARCH", // SEARCH, NOTIFICATIONS, AI_ASSISTANT
     val gestureDoubleTapAction: String = "AI_ROUTINE", // AI_ROUTINE, LOCK, APP_DRAWER
     val isFirstRunCompleted: Boolean = false,
-    val highRefreshRateEnabled: Boolean = true,
-    val isAiEnabled: Boolean = true,
-    val customWallpaperUri: String? = null,
-    val homePageCount: Int = 1
+    @androidx.room.ColumnInfo(defaultValue = "1") val highRefreshRateEnabled: Boolean = true,
+    @androidx.room.ColumnInfo(defaultValue = "1") val isAiEnabled: Boolean = true,
+    @androidx.room.ColumnInfo(defaultValue = "NULL") val customWallpaperUri: String? = null,
+    @androidx.room.ColumnInfo(defaultValue = "1") val homePageCount: Int = 1
 )

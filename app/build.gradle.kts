@@ -44,7 +44,7 @@ android {
 
   signingConfigs {
     create("fixedDebug") {
-      val keyFile = file("ci-debug.keystore")
+      val keyFile = rootProject.file("ci-debug.keystore")
       if (keyFile.exists()) {
         storeFile = keyFile
         storePassword = "androiddebug"
@@ -67,7 +67,7 @@ android {
   buildTypes {
     getByName("debug") {
       isMinifyEnabled = false
-      val keyFile = file("ci-debug.keystore")
+      val keyFile = rootProject.file("ci-debug.keystore")
       if (keyFile.exists()) {
         signingConfig = signingConfigs.getByName("fixedDebug")
       }
@@ -76,7 +76,7 @@ android {
       isMinifyEnabled = false
       isShrinkResources = false
       isCrunchPngs = false
-      val keyFile = file("ci-debug.keystore")
+      val keyFile = rootProject.file("ci-debug.keystore")
       if (keyFile.exists()) {
         signingConfig = signingConfigs.getByName("fixedDebug")
       }

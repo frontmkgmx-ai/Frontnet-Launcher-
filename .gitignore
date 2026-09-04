@@ -16,3 +16,11 @@
 local.properties
 .env
 debug.keystore
+
+*.apk
+*.aab
+!FrontLauncher-debug.apk
+ci-debug.keystore
+front-launcher-project.zip
+.gradle/
+build/
